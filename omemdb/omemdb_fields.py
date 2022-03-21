@@ -42,6 +42,7 @@ class LinkField(fields.String, _LinkableFieldInterface):
 
 
 class LinkableTupleField(fields.Tuple, _LinkableFieldInterface):
+    # todo: should check that record is a Link of correct table (only Link check is performed by marsh List field)
     def _dev_set_target_to_none(self, value, target_record):
         return tuple(v for v in value if v.target_record != target_record)
 

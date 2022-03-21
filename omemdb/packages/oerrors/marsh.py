@@ -88,8 +88,10 @@ _marsh_message_to_oexception_cls = {
     fields.Field.default_error_messages["validator_failed"]: validation_errors.InvalidValue,  # "Invalid value.",
 
     # List
-    # commented because not authorized in omemdb (mutable)
-    # fields.List.default_error_messages["invalid"]: validation_errors.InvalidList,  # "Not a valid list.",
+    fields.List.default_error_messages["invalid"]: validation_errors.InvalidList,  # "Not a valid list.",
+
+    # Dict
+    fields.Dict.default_error_messages["invalid"]: validation_errors.InvalidDict,  # "Not a valid dict."
 
     # String
     fields.String.default_error_messages["invalid"]: validation_errors.InvalidString,  # "Not a valid string.",

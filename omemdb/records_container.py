@@ -31,6 +31,9 @@ class RecordsContainer:
     def values(self, sort=False):
         raise NotImplementedError
 
+    def get_index(self, record):
+        return tuple(self.values(sort=True)).index(record)
+
 
 class FieldPkRecordsContainer(RecordsContainer):
     def __init__(self):
@@ -80,7 +83,7 @@ class DynamicPkRecordsContainer(RecordsContainer):
             return next(filter(lambda x: x.id == item, self._records))
         except AttributeError as e:
             raise AssertionError(
-                # may be caused by get_pk function. If links where not activated in correct order, may happen
+                # may be caused by get_pk function. If links were not activated in correct order, may happen
                 f"{e}\n(this may be caused by dynamic ids that did not declare their dependency tables)") from None
         except StopIteration:
             raise KeyError(item) from None

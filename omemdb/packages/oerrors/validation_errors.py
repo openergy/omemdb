@@ -1,17 +1,26 @@
 from .base_errors import ValidationError
 
 
+class NotProvided:
+    pass
+
+
 class WrongVersion(ValidationError):
     description = "Given version is incorrect."
 
-    def __init__(self, instance, message, warning=False, version=None, expected_version_pattern=None, **extra):
-        super().__init__(
+    def __init__(
+            self,
             instance,
             message,
-            warning=warning,
-            version=version,
-            expected_version_pattern=expected_version_pattern,
-            **extra)
+            warning=False,
+            version=NotProvided,
+            expected_version_pattern=NotProvided,
+            **extra):
+        for var_name in ("version", "expected_version_pattern"):
+            if locals()[var_name] is not NotProvided:
+                extra[var_name] = locals()[var_name]
+
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class CannotRemoveNotnullLink(ValidationError):
@@ -26,17 +35,14 @@ class CrossValidationFailed(ValidationError):
             instance,
             message,
             warning=False,
-            field_names=None,
-            values=None,
+            field_names=NotProvided,
+            values=NotProvided,
             **extra
     ):
-        super().__init__(
-            instance,
-            message,
-            warning=warning,
-            field_names=field_names,
-            values=values,
-            **extra)
+        for var_name in ("field_names", "values"):
+            if locals()[var_name] is not NotProvided:
+                extra[var_name] = locals()[var_name]
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class DoesNotExist(ValidationError):
@@ -54,8 +60,10 @@ class FieldRequired(ValidationError):
 class ForbiddenValue(ValidationError):
     description = "Given value is forbidden."
 
-    def __init__(self, instance, message, warning=False, value=None, **extra):
-        super().__init__(instance, message, warning=warning, value=value, **extra)
+    def __init__(self, instance, message, warning=False, value=NotProvided, **extra):
+        if value is not NotProvided:
+            extra["value"] = value
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class InvalidBoolean(ValidationError):
@@ -161,14 +169,11 @@ class InvalidTimedelta(ValidationError):
 class InvalidType(ValidationError):
     description = "Invalid type."
 
-    def __init__(self, instance, message, warning=False, given_type=None, expected_type=None, **extra):
-        super().__init__(
-            instance,
-            message,
-            warning=warning,
-            given_type=given_type,
-            expected_type=expected_type,
-            **extra)
+    def __init__(self, instance, message, warning=False, given_type=NotProvided, expected_type=NotProvided, **extra):
+        for var_name in ("given_type", "expected_type"):
+            if locals()[var_name] is not NotProvided:
+                extra[var_name] = locals()[var_name]
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class InvalidUrl(ValidationError):
@@ -186,8 +191,10 @@ class InvalidUuid(ValidationError):
 class InvalidValue(ValidationError):
     description = "Invalid value."
 
-    def __init__(self, instance, message, warning=False, value=None, **extra):
-        super().__init__(instance, message, warning=warning, value=value, **extra)
+    def __init__(self, instance, message, warning=False, value=NotProvided, **extra):
+        if value is not NotProvided:
+            extra["value"] = value
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class MaxDecimalPlacesExceeded(ValidationError):
@@ -213,19 +220,27 @@ class InvalidLength(ValidationError):
 class NotEqualTo(ValidationError):
     description = "Not equal to expected value."
 
-    def __init__(self, instance, message=None, warning=False, value=None, expected=None, **extra):
-        if message is None:
+    def __init__(self, instance, message=None, warning=False, value=NotProvided, expected=NotProvided, **extra):
+        if value is not NotProvided:
+            extra["value"] = value
+        if expected is not NotProvided:
+            extra["expected"] = expected
+        if message is None and (value is not NotProvided) and (expected is not NotProvided):
             message = f"given value ({value}) is different from expected ({expected})"
-        super().__init__(instance, message, warning=warning, value=value, expected=expected, **extra)
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class MaxValueExceeded(ValidationError):
     description = "Is bigger than max authorized value."
 
-    def __init__(self, instance, message=None, warning=False, value=None, max_value=None, **extra):
-        if message is None:
+    def __init__(self, instance, message=None, warning=False, value=NotProvided, max_value=NotProvided, **extra):
+        if value is not NotProvided:
+            extra["value"] = value
+        if max_value is not NotProvided:
+            extra["max_value"] = max_value
+        if message is None and (value is not NotProvided) and (max_value is not NotProvided):
             message = f"given value ({value}) is bigger than max authorized value ({max_value})"
-        super().__init__(instance, message, warning=warning, value=value, max_value=max_value, **extra)
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class RangeNotRespected(ValidationError):
@@ -236,24 +251,22 @@ class RangeNotRespected(ValidationError):
             instance,
             message=None,
             warning=False,
-            value=None,
-            min_value=None,
-            max_value=None,
-            min_strict=None,
-            max_strict=None,
+            value=NotProvided,
+            min_value=NotProvided,
+            max_value=NotProvided,
+            min_strict=NotProvided,
+            max_strict=NotProvided,
             **extra
     ):
-        if message is None:
+        for var_name in ("value", "min_value", "max_value", "min_strict", "max_strict"):
+            if locals()[var_name] is not NotProvided:
+                extra[var_name] = locals()[var_name]
+        if message is None and (value is not NotProvided):
             message = f"given value ({value}) does not respect range conditions."
         super().__init__(
             instance,
             message,
             warning=warning,
-            value=value,
-            min_value=min_value,
-            max_value=max_value,
-            min_strict=min_strict,
-            max_strict=max_strict,
             **extra
         )
 
@@ -273,22 +286,20 @@ class NoPk(ValidationError):
 class NotUnique(ValidationError):
     description = "Value is already registered in table although field is unique: can't use twice."
 
-    def __init__(self, instance, message, warning=False, value=None, **extra):
-        super().__init__(instance, message, warning=warning, value=value, **extra)
+    def __init__(self, instance, message, warning=False, value=NotProvided, **extra):
+        if value is not NotProvided:
+            extra["value"] = value
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class NotUniqueTogether(ValidationError):
     description = "Unique together constraint not respected."
 
-    def __init__(self, instance, message, warning=False, field_names=None, values=None, **extra):
-        super().__init__(
-            instance,
-            message,
-            warning=warning,
-            field_names=field_names,
-            values=values,
-            **extra
-        )
+    def __init__(self, instance, message, warning=False, field_names=NotProvided, values=NotProvided, **extra):
+        for var_name in ("field_names", "values"):
+            if locals()[var_name] is not NotProvided:
+                extra[var_name] = locals()[var_name]
+        super().__init__(instance, message, warning=warning, **extra)
 
 
 class Null(ValidationError):

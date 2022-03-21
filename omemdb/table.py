@@ -24,17 +24,20 @@ class Table:
     # fixme: [GL] document for users (meta, dynamic fields, ...).
     #  Explain dynamic pk risks (must be unique or may corrupt db) and drawbacks (performance issues)
     def __init__(self, record_cls, db):
+        """
+        Notes
+        -----
+        Don't use _dev_get_index in get_id method, will generate a recursion
+        """
         # fixme: [GL] check all fields are used
         # store info
         self._ref = camel_to_lower(record_cls.__name__)
         self._initials = lower_to_initials(self._ref)
-        self._record_cls = record_cls
+        self._dev_record_cls = record_cls
+        self._dev_schema = None  # we store prepared schema
         self._db = db
         self._records = None  # will depend on meta, is set in _check_and_prepare_table
-
-        # dev variables
-        self._dev_schema = None  # we store prepared schema
-
+        
         # table meta
         self._dev_pk_field = None
         self._dev_dynamic_id_fct = None
@@ -45,14 +48,14 @@ class Table:
 
     # ----------------------------------------- private ----------------------------------------------------------------
     # check table definition
-    def _check_and_prepare_table(self):
+    def _dev_check_and_prepare_table(self):
         """
         private but access is authorized by db
         """
-        assert issubclass(self._record_cls, Record), f"table {self._ref}: record class does not inherit Record"
+        assert issubclass(self._dev_record_cls, Record), f"table {self._ref}: record class does not inherit Record"
 
         # RETRIEVE SCHEMA
-        schema_cls = getattr(self._record_cls, "Schema")
+        schema_cls = getattr(self._dev_record_cls, "Schema")
         if schema_cls is None:
             raise TableDefinitionError(self._ref, "no Schema defined")
 
@@ -61,7 +64,7 @@ class Table:
 
         # CONNECT DYNAMIC SCHEMA MIXIN
         class DynamicSchema(DynamicFieldsSchemaMixin, schema_cls):  # order matters
-            pass
+            _dev_table = self
 
         # hack: _dev_table_ref and _dev_pk_field will be set at the end because _dev_pk_field is unknown for the moment
 
@@ -111,7 +114,7 @@ class Table:
         # CHECK TABLE META
 
         # * check table meta was defined
-        table_meta = getattr(self._record_cls, "TableMeta", EmptyMeta)
+        table_meta = getattr(self._dev_record_cls, "TableMeta", EmptyMeta)
 
         # * check no unknown meta fields
         unknown_fields = {k for k in dir(table_meta) if k[0] != "_"}.difference({
@@ -171,7 +174,7 @@ class Table:
         self._dev_schema.add_field("id", fields.String(dump_only=True), last=False)
 
         # * manage uniqueness (pk uniqueness is managed elsewhere)
-        unique = getattr(self._record_cls.TableMeta, "unique", [])
+        unique = getattr(self._dev_record_cls.TableMeta, "unique", [])
         if isinstance(unique, str):
             unique_together = [(unique,)]
         else:
@@ -200,7 +203,7 @@ class Table:
 
         # * manage sorting
         # fixme: [GL] put admin fields at beginning in correct order to optimize sort ?
-        self._dev_sortable = getattr(self._record_cls.TableMeta, "sortable", False)
+        self._dev_sortable = getattr(self._dev_record_cls.TableMeta, "sortable", False)
         if self._dev_sortable:
             # add index field (optional but will be set if None in batch_add)
             self._dev_schema.add_field(SORT_INDEX, fields.Integer(), last=False)
@@ -218,12 +221,6 @@ class Table:
             for linkField in self._dev_schema.declared_fields.values()
             if isinstance(linkField, LinkField)
         )
-
-        # COMPLETE DYNAMIC SCHEMA MIXIN
-        # set _dev_fields (we waited for pk field to be known)
-        self._dev_schema._dev_table_ref = self.get_ref()
-        self._dev_schema._dev_pk_field = self._dev_pk_field
-        self._dev_schema._dev_marsh_validator_cls = self.get_db().marsh_validator_cls
 
     def _check_mono_field(self, field):
         # check authorized type
@@ -245,7 +242,7 @@ class Table:
         for data in records_data:
             # create record
             with oec.catch_errors():
-                added_records.append(self._record_cls(self, data, skip_validation=skip_validation))
+                added_records.append(self._dev_record_cls(self, data, skip_validation=skip_validation))
         oec.raise_if_error()
 
         for num, record in enumerate(added_records):
@@ -331,6 +328,9 @@ class Table:
 
     def _dev_remove_record_without_unregistering(self, record):
         self._records.remove_record(record)
+
+    def _dev_get_index(self, record):
+        return self._records.get_index(record)
 
     # ---------------------------------------- public api --------------------------------------------------------------
     # python magic

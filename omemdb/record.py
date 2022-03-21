@@ -85,12 +85,7 @@ class Record:
         new_data.update(data)
 
         # manage error message pk
-        if initial_id is not None:
-            error_message_id = initial_id
-        elif self._table._dev_pk_field is not None:
-            error_message_id = new_data.get(self._table._dev_pk_field)
-        else:
-            error_message_id = "?"
+        error_message_id = self._dev_guess_new_data_id(self._table, new_data) if initial_id is None else initial_id
 
         # deserialize
         schema = self.get_schema()
@@ -143,6 +138,25 @@ class Record:
         self._data = new_data
 
     # ----------------------------------------- dev api ----------------------------------------------------------------
+    # guess id from data (for validation, record does not yet exist)
+    @classmethod
+    def _dev_guess_new_data_id(cls, table, data):
+        # manage pk_field case
+        if table._dev_pk_field is not None and table._dev_pk_field in data:
+            return data[table._dev_pk_field]
+
+        # manage no data case
+        if len(data) == 0:
+            return "?"
+
+        # try to guess
+        for standard_var in ("id", "_id", "pk", "ref", "name"):
+            if standard_var in data:
+                return str(data[standard_var])
+
+        # put all (we sort after conversion to str to prevent non sortable errors)
+        return "<" + ",".join(sorted(f"{repr(k)}={repr(v)}" for k, v in data.items())) + ">"
+
     # get
     def _dev_get_raw_value(self, item):
         return self._data[item]
@@ -311,6 +325,9 @@ class Record:
     def sort_group(self):
         return self._table._dev_sortable(self) if callable(self._table._dev_sortable) else None
 
+    def get_index(self):
+        return self.get_table()._dev_get_index(self)
+
     def get_table_ref(self):
         return self.get_table().get_ref()
 
@@ -323,7 +340,7 @@ class Record:
         probability (p): 10-5 (of one collision if n hashes generated)
         hash space (hs) = n**2/(2*ln(1/(1-p)))
 
-        36 enconding characters = ln(hs)/ln(36) = 9
+        36 encoding characters = ln(hs)/ln(36) = 9
 
         (36 is the max)
         """
@@ -401,9 +418,17 @@ class Record:
         #  Possible optimization problems.
 
     def copy(self, **data):
+        """
+        for sortable records, if no sort_index is provided, new record will go after copied record
+        """
         # fixme: [GL] test
         self_data = {k: getattr(self, k) for k in self.get_schema().declared_fields}
         self_data.update(data)
+
+        # if sortable and no sort index provided, we want record to go after copied record
+        if self.get_table()._dev_sortable and "sort_index" not in data:
+            self_data["sort_index"] += 1
+
         return self.get_table().add(**self_data)
 
     def get_pointed_records(self, sort=True):
@@ -432,7 +457,6 @@ class Record:
 
         # set table sort index
         table._dev_set_all_sort_indexes()
-
 
     def get_commitments(self):
         """

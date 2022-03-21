@@ -1,10 +1,11 @@
 import collections
 import os
-import json
 import logging
 import importlib
 
-from omemdb.packages.oversion import Version
+from . import CONF
+from .util import json_load, json_dump
+from .packages.oversion import Version
 from .oerrors_omemdb import OExceptionCollection, MissingVersionKey, MissingTableKey, VersionIsTooHigh, \
     VersionIsTooLowAutoMigrateIsOff, OmemdbMarshValidator
 
@@ -101,7 +102,7 @@ class Db:
         # check and prepare tables
         table_activation_map = collections.OrderedDict()
         for t_ref, t in self._tables.items():
-            t._check_and_prepare_table()
+            t._dev_check_and_prepare_table()
             table_activation_map[t_ref] = tuple(set(
                 [camel_to_lower(t_name) for t_name in t._dev_dynamic_id_tables] +
                 list(t._dev_link_dependencies)
@@ -229,8 +230,8 @@ class Db:
             admin_path = os.path.join(buffer_or_path, "__admin__.json")
             if not os.path.exists(admin_path):
                 raise FileNotFoundError("no __admin__.json file, can't load data")
-            with open(admin_path) as f:
-                json_data["__version__"] = json.load(f)["__version__"]
+            with open(admin_path, encoding=CONF.encoding) as f:
+                json_data["__version__"] = json_load(f)["__version__"]
 
             # tables
             for model in cls.models:
@@ -238,8 +239,8 @@ class Db:
                 table_path = os.path.join(buffer_or_path, f"{table_ref}.json")
                 if not os.path.exists(table_path):
                     raise FileNotFoundError(f"no file for table {table_ref} at path {table_path}")
-                with open(table_path) as f:
-                    json_data[table_ref] = json.load(f)
+                with open(table_path, encoding=CONF.encoding) as f:
+                    json_data[table_ref] = json_load(f)
 
         else:  # mono
             # transform to buffer if is path
@@ -247,13 +248,13 @@ class Db:
             if isinstance(buffer_or_path, str):
                 if os.path.isfile(buffer_or_path):  # is path
                     is_path = True
-                    buffer_or_path = open(buffer_or_path)
+                    buffer_or_path = open(buffer_or_path, encoding=CONF.encoding)
                 else:
                     raise FileNotFoundError(f"no such file: {buffer_or_path}")
 
             # load content
             try:
-                json_data = json.load(buffer_or_path)
+                json_data = json_load(buffer_or_path)
             finally:
                 # close buffer if is path
                 if is_path:
@@ -263,7 +264,8 @@ class Db:
 
     # ----------------------------------------- export -----------------------------------------------------------------
     def to_json_data(self):
-        d = collections.OrderedDict((t.get_ref(), t.to_json_data()) for t in self._tables.values())
+        d = collections.OrderedDict(
+            (t.get_ref(), t.to_json_data()) for t in self._tables.values())
         d["__version__"] = self.version
         d.move_to_end("__version__", last=False)
         return d
@@ -287,12 +289,12 @@ class Db:
             os.mkdir(buffer_or_path)
 
         # dump version
-        with open(os.path.join(buffer_or_path, "__admin__.json"), "w") as f:
-            json.dump({"__version__": self.version}, f)
+        with open(os.path.join(buffer_or_path, "__admin__.json"), "w", encoding=CONF.encoding) as f:
+            json_dump({"__version__": self.version}, f)
 
         # dump tables
         for table in self._tables.values():
-            with open(os.path.join(buffer_or_path, f"{table.get_ref()}.json"), "w") as f:
+            with open(os.path.join(buffer_or_path, f"{table.get_ref()}.json"), "w", encoding=CONF.encoding) as f:
                 table.to_json(buffer_or_path=f, indent=indent)
 
     # ----------------------------------- miscellaneous ----------------------------------------------------------------
