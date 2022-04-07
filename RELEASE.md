@@ -3,6 +3,7 @@
 *(M): major, (m): minor, (p): patch*
 
 ## next
+* M: fields api was modified (still needs work to be perfectly stable)
 
 ## 1.0.0
 * M: first open source version

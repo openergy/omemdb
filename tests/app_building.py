@@ -1,5 +1,5 @@
 from omemdb.packages.omarsh import Schema, fields
-from omemdb import Record, Db, LinkField, LinkableTupleField
+from omemdb import Record, Db, LinkField, TupleLinkField
 
 
 class Zone(Record):
@@ -29,7 +29,7 @@ class Surface(Record):
         ref = fields.String(required=True)
         major_zone = LinkField("Zone", required=True)
         minor_zone = LinkField("Zone", missing=None)
-        constructions = LinkableTupleField(LinkField("Construction"), missing=())
+        constructions = TupleLinkField("Construction", missing=())
 
     def _post_save(self, **kwargs):
         self._post_save_counter += 1

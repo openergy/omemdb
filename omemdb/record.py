@@ -5,8 +5,7 @@ import warnings
 
 import numpy as np
 
-from .omemdb_fields import LinkField, LinkableTupleField
-from .linkable_field_interface import LinkableFieldInterface
+from .omemdb_fields.api import LinkField, TupleLinkField, BaseLinkableField
 from .record_link import RecordLink
 from .oerrors_omemdb import OExceptionCollection, UpdateCommitmentError, DeleteCommitmentError, get_instance
 
@@ -111,7 +110,7 @@ class Record:
                 if (
                         (old_value is None)
                         or _secured_eq(value, old_value)
-                        or not isinstance(field_descriptor, LinkableFieldInterface)
+                        or not isinstance(field_descriptor, BaseLinkableField)
                 ):
                     # !! it is important to check that old value is record link (not new one), because of dynamic
                     # fields: old value may be a link, although new value has become something else
@@ -168,7 +167,7 @@ class Record:
         """
         links_to_activate = []  # [(field, link), ...]
         for field, descriptor in self.get_schema().declared_fields.items():
-            if not isinstance(descriptor, LinkableFieldInterface):
+            if not isinstance(descriptor, BaseLinkableField):
                 continue
             links_to_activate.extend([
                 (field, link) for link in descriptor._dev_get_links(self._data[field])
@@ -507,7 +506,7 @@ class Record:
         d = collections.OrderedDict()
         for field, descriptor in schema.declared_fields.items():
             if isinstance(descriptor, LinkField) or (
-                    isinstance(descriptor, LinkableTupleField) and isinstance(descriptor.container, LinkField)):
+                    isinstance(descriptor, TupleLinkField) and isinstance(descriptor.container, LinkField)):
                 d[field] = self._data.get(field)
             else:
                 d[field] = getattr(self, field, None)

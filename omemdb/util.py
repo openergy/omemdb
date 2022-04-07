@@ -62,7 +62,6 @@ def json_data_to_json(json_data, buffer_or_path=None, indent=2):
 
 def camel_to_lower(camel):
     """
-
     Parameters
     ----------
     camel: str

@@ -1,4 +1,5 @@
 import collections
+from typing import Iterable
 import os
 import logging
 import importlib
@@ -195,6 +196,11 @@ class Db:
     def get_table_refs(cls):
         return [camel_to_lower(m.__name__) for m in cls.models]
 
+    @classmethod
+    def generate_excel_input_form(cls, path):
+        from .excel import generate_input_form
+        generate_input_form(cls(), path)
+
     def __repr__(self):
         return f"<db: {self.__class__.__name__}>"
 
@@ -215,7 +221,7 @@ class Db:
             raise AttributeError(f"no table named '{item}'")
         return self._tables[item]
 
-    def __iter__(self):
+    def __iter__(self) -> Iterable[Table]:
         return iter(self._tables.values())
 
     # ----------------------------------------- load -------------------------------------------------------------------

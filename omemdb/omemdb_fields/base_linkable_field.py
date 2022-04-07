@@ -1,7 +1,11 @@
 import abc
 
 
-class LinkableFieldInterface(abc.ABC):
+class BaseLinkableField(abc.ABC):
+    """
+    A linkable field may store links. These links will be deactivated if necessary, but it is not a real link field.
+    # fixme: create a clear definition, this works but is not correctly thought
+    """
     @abc.abstractmethod
     def _dev_set_target_to_none(self, value, target_record):
         """

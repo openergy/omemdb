@@ -3,7 +3,7 @@ import logging
 
 from omemdb.packages.omarsh import fields, missing as MISSING, Schema
 
-from .omemdb_fields import LinkField
+from .omemdb_fields.api import LinkField, BaseLinkField
 from .oerrors_omemdb import OExceptionCollection, NotUnique, NotUniqueTogether, RecordDoesNotExistError, \
     TableDefinitionError
 from .util import camel_to_lower, lower_to_initials
@@ -219,7 +219,7 @@ class Table:
         self._dev_link_dependencies = set(
             linkField.target_table_ref
             for linkField in self._dev_schema.declared_fields.values()
-            if isinstance(linkField, LinkField)
+            if isinstance(linkField, BaseLinkField)
         )
 
     def _check_mono_field(self, field):

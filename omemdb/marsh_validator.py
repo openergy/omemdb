@@ -2,7 +2,7 @@ import functools
 
 from omemdb.packages.oerrors import MarshValidator as _MarshValidator
 
-from .omemdb_fields import LinkField
+from .omemdb_fields.api import LinkField
 from .oerrors_omemdb import InvalidLink
 
 
