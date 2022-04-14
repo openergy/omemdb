@@ -2,6 +2,8 @@
 
 *(M): major, (m): minor, (p): patch*
 
+## next
+
 ## 2.0.0
 * M: fields api was modified (still needs work to be perfectly stable)
 
