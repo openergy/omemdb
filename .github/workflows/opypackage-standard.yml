@@ -8,3 +8,4 @@ jobs:
     uses: openergy/github-actions-workflows/.github/workflows/opypackage-standard-v01.yml@master
     secrets:
       AZURE_CONDA_CHANNEL_KEY: ${{ secrets.AZURE_CONDA_CHANNEL_KEY }}
+      ADMIN_GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
