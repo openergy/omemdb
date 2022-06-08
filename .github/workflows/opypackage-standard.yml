@@ -5,6 +5,6 @@ on:
       - develop
 jobs:
   openergy:
-    uses: openergy/github-actions-workflows/.github/workflows/test-and-publish-package.yml@master
+    uses: openergy/github-actions-workflows/.github/workflows/opypackage-standard-v01.yml@master
     secrets:
       AZURE_CONDA_CHANNEL_KEY: ${{ secrets.AZURE_CONDA_CHANNEL_KEY }}

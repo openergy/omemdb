@@ -49,5 +49,17 @@ if link :
 * Use allow_none when you want to allow null values, and want to specify another default 
 (in this case, both allow_none and missing must be used)
 
-### cross-validation
-* For cross validation, use post_load instead of pre_load (unless you have a good reason not to)
+### validation best practices
+Validation must be performed, in the following order of preference:
+1. for unique fields:
+    * with marshmallow field definition
+    * with marshmallow schema post_load decorator (after deserialization)
+2. for cross field validation:
+    * with omemdb dynamic_post_loader (watch out with using missing: won't work if missing is already used in base 
+    schema)
+    * with marshmallow schema post_load decorator (after deserialization)
+    * with marshmallow schema pre_load decorator (before deserialization)
+    * if previous solutions are not sufficient, use post_save model method (see 3.). For example, to raise a specific 
+    cross-field message using oerrors.
+3. if links are used, use omemdb post_save model method. This is the last option, because if it fails, obat may be in a
+corrupt state, which is not a good situation
