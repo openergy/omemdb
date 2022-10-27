@@ -2,6 +2,8 @@
 
 *(M): major, (m): minor, (p): patch*
 
+## next
+
 ## 2.0.2
 * p: publishing to pypi
 
