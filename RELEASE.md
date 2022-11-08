@@ -2,7 +2,8 @@
 
 *(M): major, (m): minor, (p): patch*
 
-## next
+## 2.1.0
+* p: db.copy was implemented 
 
 ## 2.0.2
 * p: publishing to pypi

@@ -306,3 +306,9 @@ class Db:
     # ----------------------------------- miscellaneous ----------------------------------------------------------------
     def get_major_version(self):
         return None if self.version is None else int(self.version.split(".")[0])
+
+    def copy(self) -> "Db":
+        """
+        copies data and returns a new database
+        """
+        return self.__class__(json_data=self.to_json_date(), skip_validation=True)
