@@ -3,6 +3,8 @@
 *(M): major, (m): minor, (p): patch*
 
 ## next
+* p: documentation directory was created
+* p: db.copy debug
 
 ## 2.1.0
 * p: db.copy was implemented 

@@ -311,4 +311,4 @@ class Db:
         """
         copies data and returns a new database
         """
-        return self.__class__(json_data=self.to_json_date(), skip_validation=True)
+        return self.__class__(json_data=self.to_json_data(), skip_validation=True)

@@ -8,7 +8,7 @@
  ## imports
 
 	import os
-	from omemdb import Record, Schema, fields, Db
+	from obat.packages.omemdb import Record, Schema, fields, Db
 
 
  ## database

@@ -43,13 +43,15 @@ if link :
 2. table._dev_sanitize() is called on table
 3. all records of table are linked: table._dev_link() => record._dev_link()
 
-### missing, default, allow_none:
+## Schema fields definition
+
+**Missing, default, allow_none**:
 * Never use default (it is used to specify a default value when serializing)
 * Use missing instead. Use missing=None to allow null values by default
 * Use allow_none when you want to allow null values, and want to specify another default 
 (in this case, both allow_none and missing must be used)
 
-### validation best practices
+## Validation best practices
 Validation must be performed, in the following order of preference:
 1. for unique fields:
     * with marshmallow field definition
@@ -61,5 +63,5 @@ Validation must be performed, in the following order of preference:
     * with marshmallow schema pre_load decorator (before deserialization)
     * if previous solutions are not sufficient, use post_save model method (see 3.). For example, to raise a specific 
     cross-field message using oerrors.
-3. if links are used, use omemdb post_save model method. This is the last option, because if it fails, obat may be in a
+3. if links are used, use omemdb _post_save model method. This is the last option, because if it fails, obat may be in a
 corrupt state, which is not a good situation
