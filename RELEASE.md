@@ -2,6 +2,8 @@
 
 *(M): major, (m): minor, (p): patch*
 
+## next
+
 ## 2.1.1
 * p: documentation directory was created
 * p: db.copy debug
