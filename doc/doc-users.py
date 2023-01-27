@@ -1,9 +1,9 @@
-# fixme: [GL] update documentation
 import tempfile
-temp_dir = tempfile.TemporaryDirectory()
-work_dir_path = r"C:\Users\geoffroy.destaintot\Downloads"  # temp_dir.name
 
-#@ # omemdb
+temp_dir = tempfile.TemporaryDirectory()
+work_dir_path = r"C:\Users\c.cruveiller\Downloads"  # temp_dir.name
+
+#@ # omemdb: users documentation
 #@
 #@ ## use marshmallow docs
 #@
@@ -14,24 +14,27 @@ work_dir_path = r"C:\Users\geoffroy.destaintot\Downloads"  # temp_dir.name
 import os
 from omemdb.packages.omarsh import Schema, fields
 from omemdb import Record, Db
-from omemdb import LinkField
+from omemdb import LinkField, TupleLinkField
 
-#@ ## database
+
+#@ # database
 #@
 #@ A database is a collection of tables containg records.
 #@
-#@ ### declare schema
 
-# declare tables
 
+#@ ## declare tables
+
+#@ We declare the tables that are records that compose the database.
+#@ A record follows a marshmallow Schema.
+#@ Let's declare four tables that will compose our database: Zone, Surface, Consruction, Vertex
+#@ The created classes are based on the Record structure.
+
+# todo [CC] [GL]: define what is a dynamic_id
 
 class Zone(Record):
     class Schema(Schema):  # marshmallow schema, see docs
-        ref = fields.String()
-
-    class TableMeta:
-        pk = "ref"  # define a field as primary key, if none is specified, an _auto_pk is automatically created and
-                    # managed by the dB
+        ref = fields.String(required=True)
 
     @property
     def surfaces(self):  # we create our reverse links
@@ -40,61 +43,53 @@ class Zone(Record):
 
 class Surface(Record):
     class Schema(Schema):
-        ref = fields.String()  # no need to specify as unique and
+        ref = fields.String(required=True)  # no need to specify as unique and
         major_zone = LinkField("Zone", required=True)  # Link: point on other table of db
-        minor_zone = LinkField("Zone")
-        constructions = fields.Tuple(LinkField("Construction"))  # Tuple is authorised (including tuple of links)
+        minor_zone = LinkField("Zone", missing=None)
+        constructions = TupleLinkField("Construction", missing=())  # Tuple is authorised (including tuple of links)
         shape = fields.String(missing="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
         vertices = fields.NumpyArray(required=True)  # There is a special type to store NumpyArrays
-
-    class TableMeta:
-        pk = "ref"
 
 
 class Construction(Record):
     class Schema(Schema):
-        ref = fields.String()
-
-    class TableMeta:
-        pk = "ref"
+        ref = fields.String(required=True)
 
     @property
     def surfaces(self):  # we create our reverse links
         return self.get_pointed_records().select(lambda x: self in x.constructions)
 
-
-def _increment(cls):
-    current = cls.last_id
-    cls.last_id += 1
-    return current
-
+#@ Each record contains a primary key that ensure the uniqueness of each record.
+#@ When the primary key is not defined, by default the first attribute defined in the schema
+#@ will be the primary key
+#@ If specified the primary key can be a unique,dynamic_id, sortable and be declared in a TableMeta
 
 class Vertex(Record):
     last_id = 0
 
     class Schema(Schema):
-        id = fields.String()  # it is mandatory for the pk to be a string
+        pk = fields.String(required=True)  # it is mandatory for the pk to be a string
         x = fields.Integer(required=True)
         y = fields.Integer(required=True)
         z = fields.Integer(required=True)
 
     class TableMeta:
-        pk = "id"
         unique = (("x", "y", "z"),)  # tuple of unique together fields
 
-    # @classmethod
-    # def _pre_init(cls, data):  # enables a pre-processing before record __init__ method is called
-    #     x, y, z = data["coordinates"]
-    #     current_id = cls.last_id
-    #     cls.last_id += 1
-    #     return dict(
-    #         id=current_id,  # pk will be cast to string when the record is created
-    #         x=x,
-    #         y=y,
-    #         z=z
-    #     )
+    @classmethod
+    def _pre_init(cls, data):  # enables a pre-processing before record __init__ method is called
+        x, y, z = data["coordinates"]
+        current_id = cls.last_id
+        cls.last_id += 1
+        return dict(
+            id=current_id,  # pk will be cast to string when the record is created
+            x=x,
+            y=y,
+            z=z
+        )
 
-# declare database
+
+#@ ### declare database
 
 class AppBuildingDb(Db):
     models = [
@@ -112,19 +107,19 @@ def instantiate_and_populate_db():
 
     # populate
     for c_i in range(3):
-        db["Construction"].register_link(ref=f"c{c_i}")
+        db.construction.add(ref=f"c{c_i}")
 
     # create zones (batch)
-    db["Zone"].batch_add((dict(ref=f"z{z_i}") for z_i in range(3)))
+    db.zone.batch_add((dict(ref=f"z{z_i}") for z_i in range(3)))
 
     for z_i in range(3):
         # create surfaces
         for s_i in range(3):
-            db["Surface"].register_link(
+            db.surface.add(
                 ref=f"s{z_i}{s_i}",
-                major_zone=f"@Zone::z{z_i}",
-                minor_zone=None if s_i == 2 else f"@Zone::z{s_i+1}",
-                constructions=[f"@Construction::c{c_i}" for c_i in range(3)],
+                major_zone=f"z{z_i}",
+                minor_zone=None if s_i == 2 else f"z{s_i+1}",
+                constructions=[f"c{c_i}" for c_i in range(3)],
                 vertices=[[1, 2, 3], [4, 5, 6], [7, 8, 9]]
             )
 
@@ -134,12 +129,12 @@ def instantiate_and_populate_db():
 db = instantiate_and_populate_db()
 print(f"db:\n{db}")
 
-# multiple distinct database may coexist
+#@ multiple distinct database may coexist
 db2 = instantiate_and_populate_db()
 
 print(f"databases contain same tables and records (db == db2: {db == db2})")
 print(f"but they are distinct (db is not db2: {db is not db2})")
-db2["Zone"]["z1"]["ref"] = "new_ref"
+db2.zone.one("z1").ref= "new_ref"
 print(f"and their content can evolve distinctly (db == db2: {db == db2})")
 
 #@ ## table
@@ -147,7 +142,7 @@ print(f"and their content can evolve distinctly (db == db2: {db == db2})")
 #@ A table is a collection of records of the same type.
 
 # get zones table
-zones = db["Zone"]  # get table by ref
+zones = db.zone  # get table by ref
 print(f"{zones}")
 print(f"len: {len(zones)}")
 print(f"table is defined uniquely by its ref (table.ref: {zones.get_ref})\n")
@@ -163,11 +158,11 @@ for z in zones:
 qs = zones.select()
 print(f"all zones:\n{qs}\n")
 
-qs = zones.select(lambda x: x["ref"] < "z2")
+qs = zones.select(lambda x: x.ref < "z2")
 print(f"zones with refs < z2:\n{qs}\n")
 
 # select may also be performed on an existing queryset
-qs2 = qs.select(lambda x: x["ref"] > "z0")
+qs2 = qs.select(lambda x: x.ref > "z0")
 print(f"zones with refs > z0 and < z2:\n{qs2}\n")
 
 #@ queryset api
@@ -185,55 +180,54 @@ print(f"qs == qs2: {qs == qs2}")
 #@  ### get record
 
 # from a table
-z1 = zones.one(lambda x: x["ref"] == "z1")  # one syntax
-z1 = zones["z1"]  # pk syntax: will retrieve record who's pk is 'z1'
+z1 = zones.one(lambda x: x.ref == "z1")  # one syntax
+z1 = zones.one("z1")  # pk syntax: will retrieve record who's pk is 'z1'
 
 # from a queryset
-z1 = qs.one(lambda x: x["ref"] == "z1")
+z1 = qs.one(lambda x: x.ref == "z1")
 
 #@ ### record api
 # get table
-print(f"pk: {z1.get_pk}")
+print(f"pk: {z1.id}")
 print(f"db: {z1.get_db()}")
 print(f"table: {z1.get_table}")
 print(z1.get_table)
 
 #@ ### add records
 
-zones.register_link(ref="z100")  # single add
+zones.add(ref="z100")  # single add
 zones.batch_add((dict(ref="z101"), dict(ref="z102"), dict(ref="z103")))  # batch add
 print(zones.select())
 
 #@ ### remove records
-zones.unregister_link(zones["z100"])  # single remove, record syntax
-zones.unregister_link("z101")  # single remove, pk syntax
-zones.unregister_link(("z102", zones["z103"]))  # batch remove, multi syntax
+zones.one("z100").delete() # single remove, pk syntax
+zones.one(lambda x: x.ref=="z101").delete()  # single remove, one syntax
+# todo [CC]: ask Geoffroy if we still need batch remove
+#zones.delete(("z102", "z103"))  # batch remove, multi syntax
 print(zones.select())
 
 #@ ### get field value
-s11 = db["Surface"]["s11"]
+s11 = db.surface.one("s11")
 print(s11)
 
 # pk
 print("pk (ref for a surface):")
-print(f"  {s11['ref']}")  # getitem syntax is the most accurate syntax to access records database fields
-print(f"  {s11.get_pk}")  # .my_pk shortcut => is automatically transformed to ['ref']
-print(f"  {s11.get_ref}")  # gettatr shortcut => is automatically transformed to getitem syntax (if .ref was not defined as a field or method)
+print(f"  {s11.ref}")  # getitem syntax is the most accurate syntax to access records database fields
+print(f"  {s11.id}")  # gettatr shortcut => is automatically transformed to getitem syntax
+
 
 # other fields
 print("\nlinks are automatically transformed to records. major_zone example:")
-print(f"  {s11['major_zone']}")
 print(f"  {s11.major_zone}")
-
 
 #@ ### set field value
 # simple field
-s11["ref"] = "s115"
+s11.ref = "s115"
 print(s11)
-s11["ref"] = "s11"
+s11.ref = "s11"
 
 # link field
-s11["major_zone"] = db["Zone"]["z2"]
+s11.major_zone = db.zone.one("z2")
 print(s11)
 
 #@ ### navigate in pointing/pointed records
@@ -241,7 +235,7 @@ print(s11)
 print(f"records pointed by s11:\n {s11.get_pointed_records}")
 
 # pointing
-print(f"\nrecords pointing on c0:\n {db['Construction']['c0'].get_pointing_records}")
+print(f"\nrecords pointing on c0:\n {db.construction.one('c0').get_pointing_records}")
 
 #@ ## export/import
 
@@ -269,4 +263,5 @@ print(f"db_mono == db: {db_mono == db}")
 print(f"db_multi == db: {db_multi == db}")
 
 #@
+
 temp_dir.cleanup()

@@ -1,9 +1,20 @@
+"""
+#@: will appear in markdown
+##: will not appear in markdown
+
+Everything else appears (including prints), except:
+ - everything before first markdown comment
+ - everything after last markdown comment
+"""
+
+
 import io as __io
 import sys as __sys
 import textwrap as __textwrap
 
 
-__file_name = "doc-users" if len(__sys.argv) == 1 else __sys.argv[1]
+__default_file_name = "doc-developers"
+__file_name = __default_file_name if len(__sys.argv) == 1 else __sys.argv[1]
 
 
 class __Section:
@@ -18,7 +29,6 @@ class __Section:
         self.text = ""
 
 
-# def generate_doc(file_name):
 __sections = []
 
 with open(__file_name + ".py") as f:
@@ -89,8 +99,3 @@ try:
 finally:
     with open(__file_name + ".md", "w") as __f:
         __f.write(__file_content)
-
-
-# if __name__ == "__main__":
-#     __file_name = "doc" if len(__sys.argv) == 1 else __sys.argv[1]
-#     generate_doc(__file_name)
