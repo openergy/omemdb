@@ -42,7 +42,7 @@ class Record:
     - delete:
         A deletion will be refused by omemdb if delete record is pointed by a required field in initial schema.
         Omemdb therefore properly manages this situation. However, when dynamic post load validations are used,
-        a link field may become required, and omemdb can't know. We nee to prevent this case.
+        a link field may become required, and omemdb can't know. We need to prevent this case.
         committing_relations_for_delete therefore has two purposes:
             - explain to frontend current relations (to prevent wrong behavior)
             - block bad updates that omemdb would have accepted (delete was subclassed)
@@ -490,9 +490,9 @@ class Record:
         if self._committing_relations_for_delete is not None:
             committed_to_tables = self._committing_relations_for_delete.intersection(pointing)
             commitments["delete"] = {
-                    table_ref: [r.id for r in getattr(pointing, table_ref)]
-                    for table_ref in committed_to_tables
-                }
+                table_ref: [r.id for r in getattr(pointing, table_ref)]
+                for table_ref in committed_to_tables
+            }
 
         return commitments
 

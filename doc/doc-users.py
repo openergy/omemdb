@@ -16,22 +16,14 @@ from omemdb.packages.omarsh import Schema, fields
 from omemdb import Record, Db
 from omemdb import LinkField, TupleLinkField
 
-
-#@ # database
-#@
-#@ A database is a collection of tables containg records.
-#@
+#@ In the user-docmentation examples are given to exploit an already created model. For specific details on model creation please refer to the developer-documentation.
 
 
-#@ ## declare tables
+#@ # Model creation
+#@ In order to show functionalities of omemdb, first a model must be created.
+#@ Let's declare four tables that will compose our database: Zone, Surface, Consruction, Vertex. Each tables are composed by records.
 
-#@ We declare the tables that are records that compose the database.
-#@ A record follows a marshmallow Schema.
-#@ Let's declare four tables that will compose our database: Zone, Surface, Consruction, Vertex
-#@ The created classes are based on the Record structure.
-
-# todo [CC] [GL]: define what is a dynamic_id
-
+#@ ## tables creation
 class Zone(Record):
     class Schema(Schema):  # marshmallow schema, see docs
         ref = fields.String(required=True)
@@ -59,10 +51,6 @@ class Construction(Record):
     def surfaces(self):  # we create our reverse links
         return self.get_pointed_records().select(lambda x: self in x.constructions)
 
-#@ Each record contains a primary key that ensure the uniqueness of each record.
-#@ When the primary key is not defined, by default the first attribute defined in the schema
-#@ will be the primary key
-#@ If specified the primary key can be a unique,dynamic_id, sortable and be declared in a TableMeta
 
 class Vertex(Record):
     last_id = 0
@@ -87,9 +75,10 @@ class Vertex(Record):
             y=y,
             z=z
         )
+#@ Each record contains a primary key that ensure the uniqueness of each record.
+#@ The first attribute defined in the schema is by default the primary key
 
-
-#@ ### declare database
+#@ ## database creation
 
 class AppBuildingDb(Db):
     models = [
@@ -100,7 +89,7 @@ class AppBuildingDb(Db):
     ]
 
 
-#@ ### instantiate and populate database
+#@ ## instantiate and populate database: records creation
 
 def instantiate_and_populate_db():
     db = AppBuildingDb()
@@ -137,6 +126,7 @@ print(f"but they are distinct (db is not db2: {db is not db2})")
 db2.zone.one("z1").ref= "new_ref"
 print(f"and their content can evolve distinctly (db == db2: {db == db2})")
 
+#@ # Model manipulation
 #@ ## table
 #@
 #@ A table is a collection of records of the same type.
@@ -150,6 +140,9 @@ print(f"table is defined uniquely by its ref (table.ref: {zones.get_ref})\n")
 # iter zones
 for z in zones:
     print(z)
+
+# get fields
+print(f"get table fields and validation rules: {zones.get_fields()}")
 
 #@ ## queryset
 #@
@@ -165,9 +158,12 @@ print(f"zones with refs < z2:\n{qs}\n")
 qs2 = qs.select(lambda x: x.ref > "z0")
 print(f"zones with refs > z0 and < z2:\n{qs2}\n")
 
-#@ queryset api
+#@ The obtained records can be deleted, exported.
 
-# iter queryset
+#@ queryset api
+# todo [GL]: what is intended in this part? explain what are the public attributes you can get from Queryset?
+
+#@ iter queryset
 for z in qs:
     print(z)
 
@@ -179,11 +175,11 @@ print(f"qs == qs2: {qs == qs2}")
 #@
 #@  ### get record
 
-# from a table
+#@ from a table
 z1 = zones.one(lambda x: x.ref == "z1")  # one syntax
 z1 = zones.one("z1")  # pk syntax: will retrieve record who's pk is 'z1'
 
-# from a queryset
+#@ from a queryset
 z1 = qs.one(lambda x: x.ref == "z1")
 
 #@ ### record api
@@ -202,31 +198,30 @@ print(zones.select())
 #@ ### remove records
 zones.one("z100").delete() # single remove, pk syntax
 zones.one(lambda x: x.ref=="z101").delete()  # single remove, one syntax
-# todo [CC]: ask Geoffroy if we still need batch remove
-#zones.delete(("z102", "z103"))  # batch remove, multi syntax
+zones.select(lambda x: x.ref in ["z102", "z103"]).delete()  # batch remove, multi syntax
 print(zones.select())
 
 #@ ### get field value
 s11 = db.surface.one("s11")
 print(s11)
 
-# pk
+#@ pk
 print("pk (ref for a surface):")
 print(f"  {s11.ref}")  # getitem syntax is the most accurate syntax to access records database fields
 print(f"  {s11.id}")  # gettatr shortcut => is automatically transformed to getitem syntax
 
 
-# other fields
+#@ other fields
 print("\nlinks are automatically transformed to records. major_zone example:")
 print(f"  {s11.major_zone}")
 
 #@ ### set field value
-# simple field
+#@ simple field
 s11.ref = "s115"
 print(s11)
 s11.ref = "s11"
 
-# link field
+#@ link field
 s11.major_zone = db.zone.one("z2")
 print(s11)
 
@@ -242,20 +237,20 @@ print(f"\nrecords pointing on c0:\n {db.construction.one('c0').get_pointing_reco
 mono_path = os.path.join(work_dir_path, "mono.json")
 multi_path = os.path.join(work_dir_path, "multi")
 
-# export to json (mono file format)
+#@ export to json (mono file format)
 db.to_json(mono_path)  # path style
 
 with open(mono_path, "w") as f:  # buffer style
     db.to_json(f)
 
-# it is also possible to directly dump in str
+#@ it is also possible to directly dump in str
 json_str = db.to_json()
 print(f"content:\n''''\n{json_str}\n'''\n\n")
 
-# export to json (multi file format)
+#@ export to json (multi file format)
 db.to_json(multi_path, multi_files=True)  # only path file  is available in multi-mode
 
-# import
+#@ import
 db_mono = AppBuildingDb.from_json(mono_path)  # buffer style is also available
 db_multi = AppBuildingDb.from_json(multi_path)
 
