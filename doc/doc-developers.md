@@ -132,26 +132,40 @@
  Only four methods impact links and trigger a link management workflow:
  ### add record
  table: .add
+
      record: .__init__ -> ._dev_link
+
          record_link: .activate
+
             db: ._dev_register_link
 
 
 
+
  ### remove record
+
  table: .delete
+
      record: ._dev_unlink
+
          record_link: .deactivate
+
              db: ._dev_unregister_link & db._dev_remove_pointing_links
+
                  record_link: .deactivate
+
                      record:    ._dev_remove_link
 
 
 
+
  ### setitem
- [record]: .__setitem__
-     [record_link]: .deactivate
-         [db]: ._dev_unregister_link
+
+ record: .__setitem__
+
+     record_link: .deactivate
+
+         db: ._dev_unregister_link
 
  ### from_json
  1. all records are added: table._dev_add(link=False, sanitize=False) => records are appended, without registering links nor checking table sanity
