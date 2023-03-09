@@ -3,6 +3,7 @@
 *(M): major, (m): minor, (p): patch*
 
 ## next
+* p: documentation was updated
 
 ## 2.1.1
 * p: documentation directory was created
