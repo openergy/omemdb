@@ -1,12 +1,11 @@
-from marshmallow import marshalling
+from marshmallow import Schema
 from marshmallow.utils import is_collection, missing, set_value
-from marshmallow.compat import iteritems
-from marshmallow.exceptions import ValidationError
-
-SCHEMA = marshalling.SCHEMA
+from marshmallow.exceptions import ValidationError, SCHEMA
 
 
-class NoValidationUnmarshaller(marshalling.Marshaller):
+# https://github.com/marshmallow-code/marshmallow/pull/1070/files
+
+class NoValidationUnmarshaller(Schema):
     def deserialize(self, data, fields_dict, many=False, partial=False,
                     dict_class=dict, index_errors=True, index=None):
         """Deserialize ``data`` based on the schema defined by ``fields_dict``.
@@ -50,7 +49,7 @@ class NoValidationUnmarshaller(marshalling.Marshaller):
         if data is not None:
             partial_is_collection = is_collection(partial)
             ret = dict_class()
-            for attr_name, field_obj in iteritems(fields_dict):
+            for attr_name, field_obj in fields_dict.items():
                 if field_obj.dump_only:
                     continue
                 try:

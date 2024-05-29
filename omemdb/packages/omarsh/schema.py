@@ -1,6 +1,8 @@
 from marshmallow.exceptions import ValidationError
 from marshmallow.decorators import PRE_LOAD, POST_LOAD
-from marshmallow import Schema as BaseSchema, UnmarshalResult, marshalling
+#from marshmallow import Schema as BaseSchema, UnmarshalResult, marshalling
+from marshmallow import Schema as BaseSchema, post_dump
+from collections import OrderedDict
 from .no_validation_unmarshaller import NoValidationUnmarshaller
 # fixme: [GL] document that, if Meta is subclassed, don't forget to maintain ordered = True
 
@@ -9,17 +11,35 @@ class Schema(BaseSchema):
     def add_field(self, key, value, last=True):
         self.declared_fields.update({key: value})
         self.declared_fields.move_to_end(key, last=last)
-        self._update_fields(many=self.many)
+        #self._update_fields(many=self.many)
+
+    # @post_dump
+    # def add_field_bis(self, key, value, output):
+    #     output[key] = value
+    #     return output
 
     class Meta:
         ordered = True
 
     def load(self, data, many=None, partial=None, skip_validation=False):
-        if skip_validation:
-            result, errors = self._do_load_no_validate(data, many, partial=partial, postprocess=True)
-        else:
-            result, errors = self._do_load(data, many, partial=partial, postprocess=True)
-        return UnmarshalResult(data=result, errors=errors)
+        # if skip_validation:
+        #     result, errors = self._do_load_no_validate(data, many, partial=partial, postprocess=True)
+        # else:
+        #     result, errors = self._do_load(data, many, partial=partial, postprocess=True)
+        # return UnmarshalResult(data=result, errors=errors)
+        errors = {}
+        result = OrderedDict()
+        try:
+            if skip_validation:
+                result = self._do_load_no_validate(data, many=many, partial=partial, postprocess=True)
+            else:
+                result = self._do_load(data, many=many, partial=partial, postprocess=True)
+
+        except ValidationError as err:
+            errors = err.messages
+            # valid_data = err.valid_data
+
+        return dict(data=result, errors=errors)
 
     # fixme: see if we want to de-activate pre-load and post-load ?
     def _do_load_no_validate(self, data, many, partial=None, postprocess=True):
@@ -33,8 +53,10 @@ class Schema(BaseSchema):
             processed_data = self._invoke_load_processors(
                 PRE_LOAD,
                 data,
-                many,
-                original_data=data)
+                many=many,
+                original_data=data,
+                partial=partial
+            )
         except ValidationError as err:
             errors = err.normalized_messages()
             result = None
@@ -50,22 +72,8 @@ class Schema(BaseSchema):
                 )
             except ValidationError as error:
                 result = error.data
-            # skip validation
-            # self._invoke_field_validators(unmarshal, data=result, many=many)
             errors = unmarshal.errors
-            # field_errors = bool(errors)
-            # skip validation
-            # Run schema-level migration
-            # try:
-            #     self._invoke_validators(unmarshal, pass_many=True, data=result, original_data=data,
-            #                             many=many, field_errors=field_errors)
-            # except ValidationError as err:
-            #     errors.update(err.messages)
-            # try:
-            #     self._invoke_validators(unmarshal, pass_many=False, data=result, original_data=data,
-            #                             many=many, field_errors=field_errors)
-            # except ValidationError as err:
-            #     errors.update(err.messages)
+
         # Run post processors
         if not errors and postprocess:
             try:

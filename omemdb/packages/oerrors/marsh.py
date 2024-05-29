@@ -29,7 +29,7 @@ class MarshValidator:
         # load
         if self.schema is not None:
             result = self.schema.load(data_or_value, skip_validation=skip_validation)
-            data, errors = result.data, result.errors
+            data, errors = result["data"], result["errors"]
         else:
             try:
                 data, errors = deserialize_field(
@@ -83,7 +83,6 @@ _marsh_message_to_oexception_cls = {
     # -- MARSHMALLOW FIELDS MESSAGES --
     # Field
     fields.Field.default_error_messages["required"]: validation_errors.FieldRequired,  # "Missing data for required field.",
-    fields.Field.default_error_messages["type"]: validation_errors.InvalidType,  # "Invalid input type.",
     fields.Field.default_error_messages["null"]: validation_errors.Null,  # "Field may not be null.",
     fields.Field.default_error_messages["validator_failed"]: validation_errors.InvalidValue,  # "Invalid value.",
 
@@ -99,9 +98,6 @@ _marsh_message_to_oexception_cls = {
 
     # UUID
     fields.UUID.default_error_messages["invalid_uuid"]: validation_errors.InvalidUuid,  # "Not a valid UUID.",
-    # fixme: remove invalid_guid in marshmallow 3.0
-    fields.UUID.default_error_messages["invalid_guid"]: validation_errors.InvalidUuid,  # "Not a valid UUID.",
-
     # Number
     fields.Number.default_error_messages["invalid"]: validation_errors.InvalidNumber,  # "Not a valid number.",
 
@@ -113,9 +109,6 @@ _marsh_message_to_oexception_cls = {
 
     # Boolean
     fields.Boolean.default_error_messages["invalid"]: validation_errors.InvalidBoolean,  # "Not a valid boolean.",
-
-    # FormattedString
-    fields.FormattedString.default_error_messages["format"]: validation_errors.InvalidFormattedString,  # "Cannot format string with given data.",
 
     # DateTime
     fields.DateTime.default_error_messages["invalid"]: validation_errors.InvalidDatetime,  # "Not a valid datetime.",

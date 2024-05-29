@@ -74,28 +74,28 @@ class Table:
         self._dev_schema = DynamicSchema()
         for name, descriptor in self._dev_schema.declared_fields.items():
             # check default is not used
-            if descriptor.default is not MISSING:
+            if descriptor.dump_default is not MISSING:
                 logger.error(
                     f"table {self._ref}, field {name}: default was used but it will have no effect. "
                     f"Use missing instead."
                 )
 
             # check allow_none is true if missing is None
-            if descriptor.missing is None and not descriptor.allow_none:
+            if descriptor.load_default is None and not descriptor.allow_none:
                 logger.error(
                     f"table {self._ref}, field {name}: "
                     f"missing value is None, but you did not allow_none, this is not coherent."
                 )
 
             # check no missing was defined if value is required
-            if descriptor.required and descriptor.missing is not MISSING:
+            if descriptor.required and descriptor.load_default is not MISSING:
                 logger.error(
                     f"table {self._ref}, field {name}: "
                     f"missing value was provided, but field is required, this is not coherent."
                 )
 
             # check missing was provided if value is not required
-            if not descriptor.required and descriptor.missing is MISSING:
+            if not descriptor.required and descriptor.load_default is MISSING:
                 logger.error(
                     f"table {self._ref}, field {name}: "
                     f"field is not required, but no missing value was provided, not coherent."
@@ -107,7 +107,7 @@ class Table:
 
             # check value
             if isinstance(descriptor, fields.Tuple):  # manage tuples
-                self._check_mono_field(descriptor.container)
+                self._check_mono_field(descriptor.inner)
             else:
                 self._check_mono_field(descriptor)
 
