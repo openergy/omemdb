@@ -10,7 +10,9 @@ from .no_validation_unmarshaller import NoValidationUnmarshaller
 class Schema(BaseSchema):
     def add_field(self, key, value, last=True):
         self.declared_fields.update({key: value})
-        self.declared_fields.move_to_end(key, last=last)
+        # todo: check importance of leftmost/rightmost position
+        self.declared_fields[key] = self.declared_fields.pop(key)
+        #self.declared_fields.move_to_end(key, last=last)
         #self._update_fields(many=self.many)
 
     # @post_dump
