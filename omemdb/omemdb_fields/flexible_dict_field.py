@@ -26,12 +26,12 @@ class FlexibleDictField(fields.Field, BaseLinkableField):
             return value["value"]
         return value
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         return collections.OrderedDict(
             (k, self.serialize_value(v)) for k, v in self.wrap(value).items()
         )
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         return self.unwrap(value)
 
     def _dev_set_target_to_none(self, value, target_record):
@@ -45,5 +45,3 @@ class FlexibleDictField(fields.Field, BaseLinkableField):
     def _dev_get_links(self, value):
         value = self.wrap(value)
         return list(filter(lambda v: isinstance(v, RecordLink), value.values()))
-
-

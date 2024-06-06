@@ -8,7 +8,7 @@ from marshmallow import fields
 import numpy as np
 import pandas as pd
 
-ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 def make_generic(category, instant):
@@ -32,6 +32,9 @@ def make_generic(category, instant):
 
 
 def iso_parse_fct(x):
+    # todo: find proper way
+    if x.endswith('Z'):
+        x = x[:-1]
     return dt.datetime.strptime(x, ISO_FORMAT)
 
 
@@ -136,6 +139,7 @@ class TimeSeries(fields.Field):
         return json_data
 
     def _deserialize(self, value, attr, data, **kwargs):
+        index = list()
         if value is None:
             return None
 
@@ -143,11 +147,11 @@ class TimeSeries(fields.Field):
         if not isinstance(value, pd.Series):
             # check dict
             if not isinstance(value, dict):
-                self.fail("invalid_series")
+                self.make_error("invalid_series")
 
             # check keys
             if len({"data", "index", "name"}.intersection(value.keys())) != 3:
-                self.fail("invalid_series")
+                self.make_error("invalid_series")
 
             # parse index
             if self._date_format == "iso":
@@ -160,17 +164,18 @@ class TimeSeries(fields.Field):
             try:
                 index = list(map(lambda x: x if isinstance(x, dt.datetime) else parse_fct(x), value["index"]))
             except ValueError:
-                self.fail("invalid_time_index")
+                self.make_error("invalid_time_index")
 
             # make a series
+            #value = pd.Series(data=value["data"], index=index, name=value["name"], dtype=self._dtype)
             try:
                 value = pd.Series(data=value["data"], index=index, name=value["name"], dtype=self._dtype)
             except (ValueError, KeyError):
-                self.fail("invalid_series")
+                self.make_error("invalid_series")
 
         # check if time series
         if len(value) > 0 and not isinstance(value.index, pd.DatetimeIndex):
-            self.fail("invalid_time_index")
+            self.make_error("invalid_time_index")
 
         # make generic if needed
         if self._generic:

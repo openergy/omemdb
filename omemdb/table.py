@@ -37,7 +37,7 @@ class Table:
         self._dev_schema = None  # we store prepared schema
         self._db = db
         self._records = None  # will depend on meta, is set in _check_and_prepare_table
-        
+
         # table meta
         self._dev_pk_field = None
         self._dev_dynamic_id_fct = None
