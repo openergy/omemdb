@@ -23,6 +23,7 @@ class Schema(BaseSchema):
 
     class Meta:
         ordered = True
+        # Pass EXCLUDE as Meta option to keep marshmallow 2 behavior to drop unknown keys
         unknown = EXCLUDE
 
     def load(self, data, many=None, partial=None, unknown=None, skip_validation=False):
