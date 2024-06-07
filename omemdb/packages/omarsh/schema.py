@@ -14,11 +14,16 @@ from .ofields import fields
 
 
 class Schema(BaseSchema):
+    """
+    Extended Marshmallow schema with custom functionalities:
+        - dynamic schema creation
+        - lod schema with validation skipped for performance issues
+    """
     # sort_index = fields.Int(missing=0)
 
     def add_field(self, key, value, last=True):
         self.declared_fields.update({key: value})
-        self.declared_fields.move_to_end(key, last=last)
+        # self.declared_fields.move_to_end(key, last=last)
         self._init_fields()
 
     class Meta:
