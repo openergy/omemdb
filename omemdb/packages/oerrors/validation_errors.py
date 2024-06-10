@@ -71,7 +71,7 @@ class InvalidBoolean(ValidationError):
 
 
 class InvalidChoice(ValidationError):
-    description = "Must be one of."
+    description = "Invalid choice."
 
 
 class InvalidDate(ValidationError):
