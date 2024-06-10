@@ -89,9 +89,9 @@ def _deserialize_no_validation(
                 d_kwargs["partial"] = sub_partial
             else:
                 d_kwargs["partial"] = partial
-            getter = lambda val: deserialize_field(field_obj,
-                                                   val, field_name, data, skip_validation=True
-                                                   )
+            getter = lambda val: _deserialize_field(field_obj,
+                                                    val, field_name, data, skip_validation=True
+                                                    )
             value = self._call_and_store(
                 getter_func=getter,
                 data=raw_value,
@@ -120,7 +120,7 @@ def _deserialize_no_validation(
     return ret_d
 
 
-def deserialize_field(field, value, attr=None, data=None, skip_validation=False):
+def _deserialize_field(field, value, attr=None, data=None, skip_validation=False):
     """Deserialize ``value``.
 
     :raise ValidationError: If an invalid value is passed or if a required value

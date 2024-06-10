@@ -1,13 +1,11 @@
 from marshmallow.exceptions import ValidationError
 from marshmallow.decorators import PRE_LOAD, POST_LOAD, VALIDATES_SCHEMA
-# from marshmallow import Schema as BaseSchema, UnmarshalResult, marshalling
-from marshmallow import Schema as BaseSchema, post_dump, types, INCLUDE, EXCLUDE, RAISE
+from marshmallow import Schema as BaseSchema, types, EXCLUDE
 from marshmallow.utils import validate_unknown_parameter_value
 from collections import OrderedDict
 import typing
 from marshmallow.error_store import ErrorStore
-from .no_validation_unmarshaller import _deserialize_no_validation
-from .ofields import fields
+from .no_validation_deserializer import _deserialize_no_validation
 
 
 # fixme: [GL] document that, if Meta is subclassed, don't forget to maintain ordered = True
@@ -23,7 +21,7 @@ class Schema(BaseSchema):
 
     def add_field(self, key, value, last=True):
         self.declared_fields.update({key: value})
-        # self.declared_fields.move_to_end(key, last=last)
+        self.declared_fields.move_to_end(key, last=last)
         self._init_fields()
 
     class Meta:

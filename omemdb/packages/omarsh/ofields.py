@@ -32,9 +32,6 @@ def make_generic(category, instant):
 
 
 def iso_parse_fct(x):
-    # todo: find proper way
-    if x.endswith('Z'):
-        x = x[:-1]
     return dt.datetime.strptime(x, ISO_FORMAT)
 
 
@@ -100,7 +97,7 @@ class NumpyArray(fields.Field):
             try:
                 value = np.array(value)
             except (ValueError, AttributeError):
-                self.fail("invalid_numpy_array")
+                self.make_error("invalid_numpy_array")
 
         # freeze
         value.flags.writeable = False
@@ -167,7 +164,6 @@ class TimeSeries(fields.Field):
                 self.make_error("invalid_time_index")
 
             # make a series
-            #value = pd.Series(data=value["data"], index=index, name=value["name"], dtype=self._dtype)
             try:
                 value = pd.Series(data=value["data"], index=index, name=value["name"], dtype=self._dtype)
             except (ValueError, KeyError):
