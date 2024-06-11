@@ -17,16 +17,23 @@ class Schema(BaseSchema):
         - dynamic schema creation
         - lod schema with validation skipped for performance issues
     """
+
     # sort_index = fields.Int(missing=0)
 
-    def add_field(self, key, value, last=True):
-        self.declared_fields.update({key: value})
-        # print(type(self.declared_fields))
-        # self.declared_fields.move_to_end(key, last=last)
+    def add_field(
+            self,
+            key,
+            value,
+            last: bool = True):
+        new_field = {key: value}
+        if last:
+            self.declared_fields.update(new_field)
+        else:
+            self.declared_fields = {**new_field, **self.declared_fields}
         self._init_fields()
 
     class Meta:
-        ordered = True
+        ordered = True  # to serialize data to a `collections.OrderedDict`
         # Pass EXCLUDE as Meta option to keep marshmallow 2 behavior to drop unknown keys
         unknown = EXCLUDE
 
