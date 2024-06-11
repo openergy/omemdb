@@ -21,7 +21,8 @@ class Schema(BaseSchema):
 
     def add_field(self, key, value, last=True):
         self.declared_fields.update({key: value})
-        self.declared_fields.move_to_end(key, last=last)
+        # print(type(self.declared_fields))
+        # self.declared_fields.move_to_end(key, last=last)
         self._init_fields()
 
     class Meta:
