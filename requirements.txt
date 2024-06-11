@@ -1,6 +1,6 @@
 # conda
 numpy>=1.14.2,<2.0
-pandas>=1.0.0,<2.0
+pandas>=2.0.0,<3.0
 
 # conda-forge
-marshmallow>=2.15,<2.9999
+marshmallow>=3.0.0,<4.0

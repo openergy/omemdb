@@ -490,9 +490,9 @@ class Record:
         if self._committing_relations_for_delete is not None:
             committed_to_tables = self._committing_relations_for_delete.intersection(pointing)
             commitments["delete"] = {
-                table_ref: [r.id for r in getattr(pointing, table_ref)]
-                for table_ref in committed_to_tables
-            }
+                    table_ref: [r.id for r in getattr(pointing, table_ref)]
+                    for table_ref in committed_to_tables
+                }
 
         return commitments
 
@@ -506,7 +506,7 @@ class Record:
         d = collections.OrderedDict()
         for field, descriptor in schema.declared_fields.items():
             if isinstance(descriptor, LinkField) or (
-                    isinstance(descriptor, TupleLinkField) and isinstance(descriptor.container, LinkField)):
+                    isinstance(descriptor, TupleLinkField) and isinstance(descriptor.inner, LinkField)):
                 d[field] = self._data.get(field)
             else:
                 d[field] = getattr(self, field, None)
@@ -517,7 +517,7 @@ class Record:
         may be subclassed to define other styles (for example for more detail)
         !! if subclassed, style=None must behave as if was not subclassed !!
         """
-        return collections.OrderedDict(self.get_schema().dump(self.to_dict(raw_links=True)).data.items())
+        return collections.OrderedDict(self.get_schema().dump(self.to_dict(raw_links=True)).items())
 
     # ------------------------------------------- custom user actions --------------------------------------------------
     def _pre_delete(self, **kwargs):

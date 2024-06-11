@@ -8,7 +8,7 @@ from marshmallow import fields
 import numpy as np
 import pandas as pd
 
-ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
+ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
 
 def make_generic(category, instant):
@@ -50,7 +50,7 @@ class Constant(fields.Constant):
         kwargs["allow_none"] = True
         super().__init__(constant, **kwargs)
 
-    def deserialize(self, value, attr=None, data=None):
+    def deserialize(self, value, attr=None, data=None, **kwargs):
         return self.constant
 
 
@@ -65,7 +65,7 @@ class RefField(fields.String):
         "too_long": f"Longer than maximum length ({max_length})."
     }
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         value = super()._deserialize(value, attr, data).lower()
         if (value is None) or (self.pattern.fullmatch(value) is None):
             self.fail("invalid_ref")
@@ -78,7 +78,7 @@ class RefField(fields.String):
 
 
 class Tuple(fields.List):
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         return tuple(super()._deserialize(value, attr, data))
 
 
@@ -87,17 +87,17 @@ class NumpyArray(fields.Field):
         "invalid_numpy_array": "Is not a numpy array.",
     }
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         return value.tolist() if value is not None else None
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if value is None:
             return None
         if not isinstance(value, np.ndarray):
             try:
                 value = np.array(value)
             except (ValueError, AttributeError):
-                self.fail("invalid_numpy_array")
+                self.make_error("invalid_numpy_array")
 
         # freeze
         value.flags.writeable = False
@@ -124,7 +124,7 @@ class TimeSeries(fields.Field):
         self._dtype = dtype
         super().__init__(*args, **kwargs)
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         if value is None:
             return None
         # convert to pandas json
@@ -135,7 +135,8 @@ class TimeSeries(fields.Field):
 
         return json_data
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
+        index = list()
         if value is None:
             return None
 
@@ -143,11 +144,11 @@ class TimeSeries(fields.Field):
         if not isinstance(value, pd.Series):
             # check dict
             if not isinstance(value, dict):
-                self.fail("invalid_series")
+                self.make_error("invalid_series")
 
             # check keys
             if len({"data", "index", "name"}.intersection(value.keys())) != 3:
-                self.fail("invalid_series")
+                self.make_error("invalid_series")
 
             # parse index
             if self._date_format == "iso":
@@ -160,17 +161,17 @@ class TimeSeries(fields.Field):
             try:
                 index = list(map(lambda x: x if isinstance(x, dt.datetime) else parse_fct(x), value["index"]))
             except ValueError:
-                self.fail("invalid_time_index")
+                self.make_error("invalid_time_index")
 
             # make a series
             try:
                 value = pd.Series(data=value["data"], index=index, name=value["name"], dtype=self._dtype)
             except (ValueError, KeyError):
-                self.fail("invalid_series")
+                self.make_error("invalid_series")
 
         # check if time series
         if len(value) > 0 and not isinstance(value.index, pd.DatetimeIndex):
-            self.fail("invalid_time_index")
+            self.make_error("invalid_time_index")
 
         # make generic if needed
         if self._generic:
@@ -198,7 +199,7 @@ class DateTime(fields.DateTime):
         self._generic = generic
         super().__init__(format=_format, **kwargs)
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if not isinstance(value, dt.datetime):
             # call parent
             value = super()._deserialize(value, attr, data)
@@ -209,26 +210,19 @@ class DateTime(fields.DateTime):
 
         return value
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         return super()._serialize(value, attr, obj)
 
 
-class LocalDateTime(fields.LocalDateTime):
-    def _deserialize(self, value, attr, data):
-        if isinstance(value, dt.datetime):
-            return value
-        return super()._deserialize(value, attr, data)
-
-
 class TimeDelta(fields.TimeDelta):
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if isinstance(value, dt.timedelta):
             return value
         return super()._deserialize(value, attr, data)
 
 
 class Time(fields.Time):
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if isinstance(value, dt.datetime):
             return value.time()
         if isinstance(value, dt.time):
@@ -237,7 +231,7 @@ class Time(fields.Time):
 
 
 class Date(fields.Date):
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if isinstance(value, dt.datetime):
             return value.date()
         if isinstance(value, dt.date):
@@ -246,7 +240,7 @@ class Date(fields.Date):
 
 
 class PythonScript(fields.String):
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         if callable(value):
             value = inspect.getsource(value)
         value = value.replace("\r\n", "\n").replace("\r", "\n").replace("\t", "    ")
@@ -258,7 +252,7 @@ class FlexibleField(fields.Field):
         self._serializer = serializer
         super().__init__(**kwargs)
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         value = super()._serialize(value, attr, obj)
         if self._serializer is not None:
             value = self._serializer(value)

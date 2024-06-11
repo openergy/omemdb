@@ -4,6 +4,8 @@
 
 ## next
 * p: documentation was updated
+* m: supports python >=3.8;<=3.12
+* M: marshmallow depedency upgraded to >3;<4.0, breaking changes
 
 ## 2.1.1
 * p: documentation directory was created
