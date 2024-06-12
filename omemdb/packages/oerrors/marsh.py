@@ -1,6 +1,7 @@
 import inspect
 import itertools
 import json
+import re
 
 from omemdb.packages.omarsh import Schema, fields, ValidationError as OMarshValidationError, validate
 from omemdb.packages.omarsh.no_validation_deserializer import _deserialize_field
@@ -66,9 +67,9 @@ class MarshValidator:
 
     @classmethod
     def _get_oexception_from_marsh_message(cls, marsh_message, current_instance):
-        conversion_map = cls._get_error_conversion_map()
-        if marsh_message in conversion_map:
-            oexception_cls = conversion_map[marsh_message]
+        err_msg = cls._get_marsh_error_message(marsh_message)
+        if err_msg:
+            oexception_cls = err_msg
             return oexception_cls(current_instance, marsh_message)
         elif "__omarsh__" in marsh_message:  # we found a custom omarsh message, we use it
             return _omarsh_message_to_oexception(marsh_message, current_instance)
@@ -77,6 +78,25 @@ class MarshValidator:
     @classmethod
     def _get_error_conversion_map(cls):  # may be subclassed
         return _marsh_message_to_oexception_cls
+
+    @classmethod
+    def _get_marsh_error_message(cls, marsh_message):
+        conversion_map = cls._get_error_conversion_map()
+        if marsh_message in conversion_map:
+            return conversion_map[marsh_message]
+        # handle error message matching with dynamic content
+        else:
+            for error_message in conversion_map:
+                escaped_error_string = re.escape(error_message)
+                # replace placeholders like {choices} by a regex group that can match any sequence
+                pattern = re.sub(r'\\\{[^}]+\\\}', r'([^}]+)', escaped_error_string)
+                regex = re.compile(pattern)
+                match = regex.match(marsh_message)
+                if match:
+                    return conversion_map[error_message]
+                else:
+                    continue
+            return None
 
 
 _marsh_message_to_oexception_cls = {

@@ -3,9 +3,10 @@
 *(M): major, (m): minor, (p): patch*
 
 ## next
-* p: documentation was updated
+* m: documentation was updated
 * m: supports python >=3.8;<=3.12
 * M: marshmallow depedency upgraded to >3;<4.0, breaking changes
+* p: fix: handle dynamic marshmallow error messages in oerrors
 
 ## 2.1.1
 * p: documentation directory was created
