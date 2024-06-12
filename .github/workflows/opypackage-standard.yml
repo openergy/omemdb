@@ -5,10 +5,10 @@ on:
       - cc_3_12
 jobs:
   openergy:
-    uses: openergy/ogithub-actions/.github/workflows/opypackage-standard-v05.yml@cc_opyplus
+    uses: openergy/ogithub-actions/.github/workflows/opypackage-standard-v05.yml@cc_python_update
     with:
       #publish-to-pypi: true
-      os-requirements: "['ubuntu-latest']"
+      os-requirements: "['ubuntu-latest', 'windows-latest']"
       python-conda-requirement: ">=3.7,<3.13"
       python-versions: "['3.10', '3.11', '3.12']"
     secrets:
