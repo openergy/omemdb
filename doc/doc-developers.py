@@ -28,9 +28,9 @@ class Surface(Record):
     class Schema(Schema):
         ref = fields.String(required=True)  # no need to specify as unique and
         major_zone = LinkField("Zone", required=True)  # Link: point on other table of db
-        minor_zone = LinkField("Zone", missing=None)
-        constructions = TupleLinkField("Construction", missing=())  # Tuple is authorised (including tuple of links)
-        shape = fields.String(missing="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
+        minor_zone = LinkField("Zone", load_default=None)
+        constructions = TupleLinkField("Construction", load_default=())  # Tuple is authorised (including tuple of links)
+        shape = fields.String(load_default="rectangle")  # !! use 'load_default' keyword for defaults, not 'default'
         vertices = fields.NumpyArray(required=True)  # There is a special type to store NumpyArrays
 
     class TableMeta:
@@ -166,13 +166,13 @@ class Surface(Record):
     class Schema(Schema):
         ref = fields.String(required=True)  # no need to specify as unique and
         major_zone = LinkField("Zone", required=True)  # Link: point on other table of db
-        minor_zone = LinkField("Zone", missing=None)
-        construction = TupleLinkField("Construction", missing=())  # Tuple is authorized (including tuple of links)
-        shape = fields.String(missing="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
+        minor_zone = LinkField("Zone", load_default=None)
+        construction = TupleLinkField("Construction", load_default=())  # Tuple is authorized (including tuple of links)
+        shape = fields.String(load_default="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
         vertices = fields.NumpyArray(required=True)  # There is a special type to store NumpyArrays
 
 
-#@ ## Missing, default, allow_none:
+#@ ## load_default, default, allow_none:
 #@
 #@ - Never use default (it is used to specify a default value when serializing)
 #@ - Use missing instead. Use missing=None to allow null or specific values by default
@@ -192,7 +192,7 @@ class TestSystem(Record):
         is_centralized = fields.Boolean(required=True)
         type = fields.String(required=True, validate=validate.OneOf(
             ("system_centralized", "system_decentralized_1", "system_decentralized_2")))
-        capacity = fields.Float(missing=None, validate=validate.Range(0))
+        capacity = fields.Float(load_default=None, validate=validate.Range(0))
 
 #@ * with marshmallow schema post_load decorator (after deserialization): see marshmallow documentation
 #@
@@ -206,7 +206,7 @@ class HeatingSystem(Record):
         ref = fields.String(required=True, validate=validate.Length(1))
         is_centralized = fields.Boolean(required=True)
         type = fields.String(required=True, validate=validate.OneOf(("system_centralized","system_decentralized_1","system_decentralized_2")))
-        capacity = fields.Float(missing=None,validate=validate.Range(0))
+        capacity = fields.Float(load_default=None,validate=validate.Range(0))
 
         def dynamic_post_load(self, data):
             dsd = dict()

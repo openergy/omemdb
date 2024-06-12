@@ -6,7 +6,7 @@ class Base(Record):
     class Schema(Schema):
         ref = fields.String(required=True)
         age = fields.Integer(required=True)
-        optional_age = fields.Integer(missing=None)
+        optional_age = fields.Integer(load_default=None)
 
 
 def _dynamic_id_fct(x):

@@ -39,9 +39,9 @@
 	    class Schema(Schema):
 	        ref = fields.String(required=True)  # no need to specify as unique and
 	        major_zone = LinkField("Zone", required=True)  # Link: point on other table of db
-	        minor_zone = LinkField("Zone", missing=None)
-	        constructions = TupleLinkField("Construction", missing=())  # Tuple is authorised (including tuple of links)
-	        shape = fields.String(missing="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
+	        minor_zone = LinkField("Zone", load_default=None)
+	        constructions = TupleLinkField("Construction", load_default=())  # Tuple is authorised (including tuple of links)
+	        shape = fields.String(load_default="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
 	        vertices = fields.NumpyArray(required=True)  # There is a special type to store NumpyArrays
 
 
@@ -191,7 +191,7 @@
 	  id: z2
 	  ref: z2
 
-	get table fields and validation rules: OrderedDict([('id', <fields.String(default=<marshmallow.missing>, attribute=None, validate=None, required=False, load_only=False, dump_only=True, missing=<marshmallow.missing>, allow_none=False, error_messages={'required': 'Missing data for required field.', 'type': 'Invalid type.', 'null': 'Field may not be null.', 'validator_failed': 'Invalid value.', 'invalid': 'Not a valid string.', 'invalid_utf8': 'Not a valid utf-8 string.'})>), ('ref', <fields.String(default=<marshmallow.missing>, attribute=None, validate=None, required=True, load_only=False, dump_only=False, missing=<marshmallow.missing>, allow_none=False, error_messages={'required': 'Missing data for required field.', 'type': 'Invalid type.', 'null': 'Field may not be null.', 'validator_failed': 'Invalid value.', 'invalid': 'Not a valid string.', 'invalid_utf8': 'Not a valid utf-8 string.'})>)])
+	get table fields and validation rules: {'id': <fields.String(dump_default=<marshmallow.missing>, attribute=None, validate=None, required=False, load_only=False, dump_only=True, load_default=<marshmallow.missing>, allow_none=False, error_messages={'required': 'Missing data for required field.', 'null': 'Field may not be null.', 'validator_failed': 'Invalid value.', 'invalid': 'Not a valid string.', 'invalid_utf8': 'Not a valid utf-8 string.'})>, 'ref': <fields.String(dump_default=<marshmallow.missing>, attribute=None, validate=None, required=True, load_only=False, dump_only=False, load_default=<marshmallow.missing>, allow_none=False, error_messages={'required': 'Missing data for required field.', 'null': 'Field may not be null.', 'validator_failed': 'Invalid value.', 'invalid': 'Not a valid string.', 'invalid_utf8': 'Not a valid utf-8 string.'})>}
 
  ## queryset
 
@@ -326,7 +326,7 @@
 
 	surface
 	  id: s11
-	  constructions: (<omemdb.record_link.RecordLink object at 0x00000289D62D2110>, <omemdb.record_link.RecordLink object at 0x00000289D62D2090>, <omemdb.record_link.RecordLink object at 0x00000289D62D2190>)
+	  constructions: (<omemdb.record_link.RecordLink object at 0x000001F435E362D0>, <omemdb.record_link.RecordLink object at 0x000001F435E36300>, <omemdb.record_link.RecordLink object at 0x000001F435E36330>)
 	  major_zone: <zone: z1>
 	  minor_zone: <zone: z2>
 	  ref: s11
@@ -377,7 +377,7 @@
 
 	surface
 	  id: s115
-	  constructions: (<omemdb.record_link.RecordLink object at 0x00000289D62D2110>, <omemdb.record_link.RecordLink object at 0x00000289D62D2090>, <omemdb.record_link.RecordLink object at 0x00000289D62D2190>)
+	  constructions: (<omemdb.record_link.RecordLink object at 0x000001F435E362D0>, <omemdb.record_link.RecordLink object at 0x000001F435E36300>, <omemdb.record_link.RecordLink object at 0x000001F435E36330>)
 	  major_zone: <zone: z1>
 	  minor_zone: <zone: z2>
 	  ref: s115
@@ -397,7 +397,7 @@
 
 	surface
 	  id: s11
-	  constructions: (<omemdb.record_link.RecordLink object at 0x00000289D62D2110>, <omemdb.record_link.RecordLink object at 0x00000289D62D2090>, <omemdb.record_link.RecordLink object at 0x00000289D62D2190>)
+	  constructions: (<omemdb.record_link.RecordLink object at 0x000001F435E362D0>, <omemdb.record_link.RecordLink object at 0x000001F435E36300>, <omemdb.record_link.RecordLink object at 0x000001F435E36330>)
 	  major_zone: <zone: z2>
 	  minor_zone: <zone: z2>
 	  ref: s11
