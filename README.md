@@ -1,5 +1,7 @@
-
-
+![GitHub](https://img.shields.io/github/license/openergy/omemdb?color=brightgreen)
+[![test-and-publish](https://github.com/openergy/omdmdb/actions/workflows/opypackage-standard.yml/badge.svg?branch=develop)](https://github.com/openergy/opyplus/actions/workflows/opypackage-standard.yml)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/omemdb)
+![PyPI](https://img.shields.io/pypi/v/omemdb)
 
 # Omemdb 
 Omemdb is a in memory Object Relational Mapper giving the ability to write queries and manipulate data using an object oriented paradigm. 
@@ -25,4 +27,4 @@ see [doc-users.md](doc/doc-users.md) (use doc-users.py to modify)
 
 see [doc-developers.md](doc/doc-developers.md)
 
-Field validation is based on [Marshmallow v2.x framework](https://marshmallow.readthedocs.io/en/2.x-line/).
+Field validation is based on [Marshmallow v3 framework](https://marshmallow.readthedocs.io/en/stable/).
