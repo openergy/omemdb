@@ -9,8 +9,22 @@ from marshmallow import fields
 import numpy as np
 import pandas as pd
 import copy
+from omemdb.record_link import RecordLink
 
 ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
+
+
+def make_deeply_immutable(obj):
+    if isinstance(obj, dict):
+        return MappingProxyType({k: make_deeply_immutable(v) for k, v in obj.items()})
+    elif isinstance(obj, list):
+        return tuple(make_deeply_immutable(item) for item in obj)
+    elif isinstance(obj, set):
+        return tuple(make_deeply_immutable(item) for item in obj)
+    elif isinstance(obj, (str, int, float, bool, RecordLink)):
+        return obj
+    else:
+        raise TypeError(f"Unsupported type: {type(obj)}")
 
 
 def make_generic(category, instant):
@@ -81,7 +95,7 @@ class RefField(fields.String):
 
 class Tuple(fields.List):
     def _deserialize(self, value, attr, data, **kwargs):
-        return tuple(super()._deserialize(value, attr, data))
+        return make_deeply_immutable(super()._deserialize(value, attr, data))
 
 
 class ImmutableDict(fields.Mapping):
@@ -91,8 +105,7 @@ class ImmutableDict(fields.Mapping):
 
     def _deserialize(self, value, attr, data, **kwargs):
         value = super()._deserialize(value, attr, data)
-        # deepcopy to remove reference to first declaration variable
-        return MappingProxyType(copy.deepcopy(value))
+        return make_deeply_immutable(value)
 
 
 class NumpyArray(fields.Field):

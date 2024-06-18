@@ -9,6 +9,7 @@
 * p: fix: handle dynamic marshmallow error messages in oerrors
 * m: immutable dict field added
 * m: access record metadata method was implemented
+* p: make tuple field elements immutable
 
 ## 2.1.1
 * p: documentation directory was created
