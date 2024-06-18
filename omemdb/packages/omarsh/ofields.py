@@ -20,7 +20,7 @@ def make_deeply_immutable(obj):
     elif isinstance(obj, list):
         return tuple(make_deeply_immutable(item) for item in obj)
     elif isinstance(obj, set):
-        return tuple(make_deeply_immutable(item) for item in obj)
+        return tuple(make_deeply_immutable(item) for item in sorted(obj))
     elif isinstance(obj, (str, int, float, bool, RecordLink)):
         return obj
     else:
