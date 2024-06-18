@@ -48,3 +48,23 @@ class TestFields(unittest.TestCase):
             "        def times2(x): return 2*x\n",
             deserialized
         )
+
+    def test_immutable_dict_field(self):
+        db = AppFields()
+        # check correct value
+        country_mapping_d = {"france": True, "spain": False}
+        db.immutable_dict_field_record.add(ref="hello", country_map=country_mapping_d)
+        with self.assertRaises(TypeError):
+            db.immutable_dict_field_record.one().country_map["france"] = "green"
+
+    def test_get_record_metadata(self):
+        db = AppFields()
+        # check correct value
+        country_mapping_d = {"france": True, "spain": False}
+        db.immutable_dict_field_record.add(ref="hello", country_map=country_mapping_d)
+        metadata_d = db.immutable_dict_field_record.one().get_metadata_dict()
+        self.assertEqual(
+            {'title': 'Country Map', 'description': 'This field contains bolean values for country'},
+            metadata_d["country_map"]
+        )
+

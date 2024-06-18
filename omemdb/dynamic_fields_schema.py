@@ -1,5 +1,4 @@
 from .oerrors_omemdb import OExceptionCollection, get_instance
-from collections import OrderedDict
 
 
 class DynamicFieldsSchemaMixin:

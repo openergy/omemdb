@@ -3,10 +3,12 @@ import datetime as dt
 import json
 import collections
 import inspect
+from types import MappingProxyType
 
 from marshmallow import fields
 import numpy as np
 import pandas as pd
+import copy
 
 ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
@@ -80,6 +82,17 @@ class RefField(fields.String):
 class Tuple(fields.List):
     def _deserialize(self, value, attr, data, **kwargs):
         return tuple(super()._deserialize(value, attr, data))
+
+
+class ImmutableDict(fields.Mapping):
+    def _serialize(self, value, attr, obj, **kwargs):
+        value = dict(value)
+        return super()._serialize(value, attr, obj)
+
+    def _deserialize(self, value, attr, data, **kwargs):
+        value = super()._deserialize(value, attr, data)
+        # deepcopy to remove reference to first declaration variable
+        return MappingProxyType(copy.deepcopy(value))
 
 
 class NumpyArray(fields.Field):

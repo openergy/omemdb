@@ -4,7 +4,7 @@ import json
 import re
 
 from omemdb.packages.omarsh import Schema, fields, ValidationError as OMarshValidationError, validate
-from omemdb.packages.omarsh.no_validation_deserializer import _deserialize_field
+from omemdb.packages.omarsh.no_validation_deserializer import deserialize_field
 
 from . import validation_errors
 from .oexception_collection import OExceptionCollection
@@ -33,7 +33,7 @@ class MarshValidator:
             data, errors = result["data"], result["errors"]
         else:
             try:
-                data, errors = _deserialize_field(
+                data, errors = deserialize_field(
                     self.field_descriptor,
                     data_or_value,
                     skip_validation=skip_validation

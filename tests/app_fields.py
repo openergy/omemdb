@@ -29,6 +29,7 @@ class AllowNoneFieldRecord(Record):
     Set this to True if None should be considered a valid value during validation/deserialization.
     If missing=None and allow_none is unset, will default to True. Otherwise, the default is False.
     """
+
     class Schema(Schema):
         ref = fields.RefField(required=True)
         can_be_none = fields.Int(allow_none=True, load_default=None)
@@ -37,9 +38,18 @@ class AllowNoneFieldRecord(Record):
         default_cant_be_none = fields.Int(load_default=0)
 
 
+class ImmutableDictFieldRecord(Record):
+    class Schema(Schema):
+        ref = fields.RefField(required=True)
+        country_map = fields.ImmutableDict(missing=None, keys=fields.String, values=fields.Boolean,
+                                           metadata={"title": "Country Map",
+                                                     "description": "This field contains bolean values for country"})
+
+
 class AppFields(Db):
     models = [
         CustomFieldsRecord,
         RefFieldRecord,
-        AllowNoneFieldRecord
+        AllowNoneFieldRecord,
+        ImmutableDictFieldRecord
     ]
