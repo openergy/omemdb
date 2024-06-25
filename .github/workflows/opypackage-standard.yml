@@ -14,4 +14,4 @@ jobs:
     secrets:
       AZURE_CONDA_CHANNEL_KEY: ${{ secrets.AZURE_CONDA_CHANNEL_KEY }}
       ADMIN_GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
-      PYPI_OPENERGY_PASSWORD: ${{ secrets.PYPI_OPENERGY_PASSWORD }}
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}
