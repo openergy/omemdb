@@ -2,6 +2,8 @@
 
 *(M): major, (m): minor, (p): patch*
 
+## next
+
 ## 3.0.0
 * m: documentation was updated
 * M: supports python >=3.8;<=3.12
