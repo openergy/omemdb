@@ -2,8 +2,14 @@
 
 *(M): major, (m): minor, (p): patch*
 
-## next
-* p: documentation was updated
+## 3.0.0
+* m: documentation was updated
+* M: supports python >=3.8;<=3.12
+* M: marshmallow depedency upgraded to >3;<4.0, breaking changes
+* p: fix: handle dynamic marshmallow error messages in oerrors
+* m: immutable dict field added
+* m: access record metadata method was implemented
+* p: make tuple field elements immutable
 
 ## 2.1.1
 * p: documentation directory was created

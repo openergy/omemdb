@@ -5,10 +5,13 @@ on:
       - develop
 jobs:
   openergy:
-    uses: openergy/github-actions-workflows/.github/workflows/opypackage-standard-v02.yml@master
+    uses: openergy/ogithub-actions/.github/workflows/opypackage-standard-v05.yml@master
     with:
       publish-to-pypi: true
+      os-requirements: "['ubuntu-latest']"
+      python-conda-requirement: ">=3.8,<3.13"
+      python-test-versions: "['3.12']"
     secrets:
       AZURE_CONDA_CHANNEL_KEY: ${{ secrets.AZURE_CONDA_CHANNEL_KEY }}
       ADMIN_GITHUB_TOKEN: ${{ secrets.ADMIN_GITHUB_TOKEN }}
-      PYPI_OPENERGY_PASSWORD: ${{ secrets.PYPI_OPENERGY_PASSWORD }}
+      PYPI_API_TOKEN: ${{ secrets.PYPI_API_TOKEN }}

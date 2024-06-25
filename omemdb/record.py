@@ -13,7 +13,6 @@ EPSILON = 0.00001
 SORT_GROUP = "sort_group"  # don't forget to change record property (and it's calls) if variable is changed
 SORT_INDEX = "sort_index"
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -324,6 +323,15 @@ class Record:
     def sort_group(self):
         return self._table._dev_sortable(self) if callable(self._table._dev_sortable) else None
 
+    def get_metadata_dict(self):
+        """
+
+        Returns
+        -------
+        Dict of metadata for each record's field
+        """
+        return {field_ref: field.metadata for field_ref, field in self._table._dev_schema.fields.items()}
+
     def get_index(self):
         return self.get_table()._dev_get_index(self)
 
@@ -506,7 +514,7 @@ class Record:
         d = collections.OrderedDict()
         for field, descriptor in schema.declared_fields.items():
             if isinstance(descriptor, LinkField) or (
-                    isinstance(descriptor, TupleLinkField) and isinstance(descriptor.container, LinkField)):
+                    isinstance(descriptor, TupleLinkField) and isinstance(descriptor.inner, LinkField)):
                 d[field] = self._data.get(field)
             else:
                 d[field] = getattr(self, field, None)
@@ -517,7 +525,7 @@ class Record:
         may be subclassed to define other styles (for example for more detail)
         !! if subclassed, style=None must behave as if was not subclassed !!
         """
-        return collections.OrderedDict(self.get_schema().dump(self.to_dict(raw_links=True)).data.items())
+        return collections.OrderedDict(self.get_schema().dump(self.to_dict(raw_links=True)).items())
 
     # ------------------------------------------- custom user actions --------------------------------------------------
     def _pre_delete(self, **kwargs):

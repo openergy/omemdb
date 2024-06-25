@@ -1,9 +1,10 @@
 import inspect
 import itertools
 import json
+import re
 
 from omemdb.packages.omarsh import Schema, fields, ValidationError as OMarshValidationError, validate
-from omemdb.packages.omarsh.no_validation_unmarshaller import deserialize_field
+from omemdb.packages.omarsh.no_validation_deserializer import deserialize_field
 
 from . import validation_errors
 from .oexception_collection import OExceptionCollection
@@ -29,7 +30,7 @@ class MarshValidator:
         # load
         if self.schema is not None:
             result = self.schema.load(data_or_value, skip_validation=skip_validation)
-            data, errors = result.data, result.errors
+            data, errors = result["data"], result["errors"]
         else:
             try:
                 data, errors = deserialize_field(
@@ -66,9 +67,9 @@ class MarshValidator:
 
     @classmethod
     def _get_oexception_from_marsh_message(cls, marsh_message, current_instance):
-        conversion_map = cls._get_error_conversion_map()
-        if marsh_message in conversion_map:
-            oexception_cls = conversion_map[marsh_message]
+        err_msg = cls._get_marsh_error_message(marsh_message)
+        if err_msg:
+            oexception_cls = err_msg
             return oexception_cls(current_instance, marsh_message)
         elif "__omarsh__" in marsh_message:  # we found a custom omarsh message, we use it
             return _omarsh_message_to_oexception(marsh_message, current_instance)
@@ -78,12 +79,30 @@ class MarshValidator:
     def _get_error_conversion_map(cls):  # may be subclassed
         return _marsh_message_to_oexception_cls
 
+    @classmethod
+    def _get_marsh_error_message(cls, marsh_message):
+        conversion_map = cls._get_error_conversion_map()
+        if marsh_message in conversion_map:
+            return conversion_map[marsh_message]
+        # handle error message matching with dynamic content
+        else:
+            for error_message in conversion_map:
+                escaped_error_string = re.escape(error_message)
+                # replace placeholders like {choices} by a regex group that can match any sequence
+                pattern = re.sub(r'\\\{[^}]+\\\}', r'([^}]+)', escaped_error_string)
+                regex = re.compile(pattern)
+                match = regex.match(marsh_message)
+                if match:
+                    return conversion_map[error_message]
+                else:
+                    continue
+            return None
+
 
 _marsh_message_to_oexception_cls = {
     # -- MARSHMALLOW FIELDS MESSAGES --
     # Field
     fields.Field.default_error_messages["required"]: validation_errors.FieldRequired,  # "Missing data for required field.",
-    fields.Field.default_error_messages["type"]: validation_errors.InvalidType,  # "Invalid input type.",
     fields.Field.default_error_messages["null"]: validation_errors.Null,  # "Field may not be null.",
     fields.Field.default_error_messages["validator_failed"]: validation_errors.InvalidValue,  # "Invalid value.",
 
@@ -99,9 +118,6 @@ _marsh_message_to_oexception_cls = {
 
     # UUID
     fields.UUID.default_error_messages["invalid_uuid"]: validation_errors.InvalidUuid,  # "Not a valid UUID.",
-    # fixme: remove invalid_guid in marshmallow 3.0
-    fields.UUID.default_error_messages["invalid_guid"]: validation_errors.InvalidUuid,  # "Not a valid UUID.",
-
     # Number
     fields.Number.default_error_messages["invalid"]: validation_errors.InvalidNumber,  # "Not a valid number.",
 
@@ -113,9 +129,6 @@ _marsh_message_to_oexception_cls = {
 
     # Boolean
     fields.Boolean.default_error_messages["invalid"]: validation_errors.InvalidBoolean,  # "Not a valid boolean.",
-
-    # FormattedString
-    fields.FormattedString.default_error_messages["format"]: validation_errors.InvalidFormattedString,  # "Cannot format string with given data.",
 
     # DateTime
     fields.DateTime.default_error_messages["invalid"]: validation_errors.InvalidDatetime,  # "Not a valid datetime.",

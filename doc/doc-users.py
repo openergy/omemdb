@@ -37,9 +37,9 @@ class Surface(Record):
     class Schema(Schema):
         ref = fields.String(required=True)  # no need to specify as unique and
         major_zone = LinkField("Zone", required=True)  # Link: point on other table of db
-        minor_zone = LinkField("Zone", missing=None)
-        constructions = TupleLinkField("Construction", missing=())  # Tuple is authorised (including tuple of links)
-        shape = fields.String(missing="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
+        minor_zone = LinkField("Zone", load_default=None)
+        constructions = TupleLinkField("Construction", load_default=())  # Tuple is authorised (including tuple of links)
+        shape = fields.String(load_default="rectangle")  # !! use 'missing' keyword for defaults, not 'default'
         vertices = fields.NumpyArray(required=True)  # There is a special type to store NumpyArrays
 
 

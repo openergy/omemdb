@@ -17,11 +17,11 @@ class LinkField(fields.String, BaseLinkField):
     def target_table_ref(self):
         return self._target_table_ref
 
-    def _serialize(self, value, attr, obj):
+    def _serialize(self, value, attr, obj, **kwargs):
         validated = value.target_record.id if value is not None else None
         return super()._serialize(validated, attr, obj)
 
-    def _deserialize(self, value, attr, data):
+    def _deserialize(self, value, attr, data, **kwargs):
         # touchy import
         from ..record import Record
         if value is None:
