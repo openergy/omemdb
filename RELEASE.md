@@ -2,7 +2,8 @@
 
 *(M): major, (m): minor, (p): patch*
 
-## next
+## 3.0.1
+* p: devops debug
 
 ## 3.0.0
 * m: documentation was updated
