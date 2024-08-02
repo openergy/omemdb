@@ -2,7 +2,8 @@
 
 *(M): major, (m): minor, (p): patch*
 
-## next
+## 3.0.2
+* p: update field deserialize_no_validation to latest marshmallow deserialize method
 
 ## 3.0.1
 * p: devops debug

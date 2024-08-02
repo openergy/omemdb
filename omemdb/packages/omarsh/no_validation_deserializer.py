@@ -129,7 +129,10 @@ def deserialize_field(field, value, attr=None, data=None, skip_validation=False)
     # Validate required fields, deserialize, then validate
     # deserialized value
     field._validate_missing(value)
-    if getattr(field, 'allow_none', False) is True and value is None:
+    if value is missing:
+        _miss = field.load_default
+        return _miss() if callable(_miss) else _miss
+    if field.allow_none and value is None:
         return None
     output = field._deserialize(value, attr, data)
     if not skip_validation:
