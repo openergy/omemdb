@@ -11,7 +11,7 @@ import pandas as pd
 import copy
 from omemdb.record_link import RecordLink
 
-ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
+ISO_FORMAT = "%Y-%m-%dT%H:%M:%S.%fZ"
 
 
 def make_deeply_immutable(obj):
@@ -154,6 +154,7 @@ class TimeSeries(fields.Field):
         if value is None:
             return None
         # convert to pandas json
+        value.index = value.index.tz_localize('UTC')
         json_str = value.to_json(orient="split", date_unit="ms", date_format=self._date_format)
 
         # convert to json data (sort to prevent random order...)
